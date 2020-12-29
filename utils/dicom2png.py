@@ -10,7 +10,7 @@ import math
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
     level=logging.INFO,
-    datefmt='%Y-%m-%d %H:%M:%S',
+    datefmt='%Y-%m-%dgit stat %H:%M:%S',
     handlers=[
         logging.FileHandler("../info.log"),
         logging.StreamHandler()
