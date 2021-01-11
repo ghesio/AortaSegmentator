@@ -1,5 +1,7 @@
 # https://simpleitk.readthedocs.io/en/master/link_DicomConvert_docs.html
 # https://stackoverflow.com/questions/54160097/how-do-i-change-the-axis-simpleitkimageserieswriter-using
+# https://stackoverflow.com/questions/34782409/understanding-dicom-image-attributes-to-get-axial-coronal-sagittal-cuts
+# https://dicom.innolitics.com/ciods/ct-image/image-plane/00280030
 
 import os
 import sys
@@ -50,7 +52,9 @@ def convert_dicom(input_dir, output_dir, downsample_factor=None, directions=[1, 
         logging.info('Equalization of the image')
         sitk.AdaptiveHistogramEqualization(image)
     size = image.GetSize()
+    spacing = image.GetSpacing()
     logging.info('Image size (px): ' + str(size[0]) + 'x' + str(size[1]) + 'x' + str(size[2]))
+    logging.info('Spacing info (mm): ' + str(spacing[0]) + 'x' + str(spacing[1]) + 'x' + str(spacing[2]))
     # Convert to numpy array
     image_array = sitk.GetArrayFromImage(image)
     if downsample_factor:
