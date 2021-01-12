@@ -78,8 +78,9 @@ def convert_dicom(input_dir, output_dir, downsample_factor=None, directions=[1, 
                  str(spacing[2]))
     image = resample_image(image)
     size = image.GetSize()
-    # set RAI direction
-    image.SetDirection([1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0])
+    orientation_filter = sitk.DICOMOrientImageFilter()
+    orientation_filter.SetDesiredCoordinateOrientation(DesiredCoordinateOrientation='RAI')
+    image = orientation_filter.Execute(image)
     logging.info('Image size - after resample (px): ' + str(size[0]) + 'x' + str(size[1]) + 'x' + str(size[2]))
     spacing = image.GetSpacing()
     logging.info('Spacing info - after resample (mm): ' + str(spacing[0]) + 'x' + str(spacing[1]) + 'x' +
