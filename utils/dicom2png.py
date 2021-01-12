@@ -1,7 +1,6 @@
-# https://simpleitk.readthedocs.io/en/master/link_DicomConvert_docs.html
-# https://stackoverflow.com/questions/54160097/how-do-i-change-the-axis-simpleitkimageserieswriter-using
-# https://stackoverflow.com/questions/34782409/understanding-dicom-image-attributes-to-get-axial-coronal-sagittal-cuts
+# https://simpleitk.readthedocs.io
 # https://dicom.innolitics.com/ciods/ct-image/image-plane/00280030
+# http://dicomiseasy.blogspot.com/2013/06/getting-oriented-using-image-plane.html
 
 import os
 import sys
@@ -37,16 +36,24 @@ def read_all_directories():
         file_map[dir] = dir.replace('in', 'out')
     return file_map
 
-def resample_image(itk_image, out_spacing=[1.0, 1.0, 1.0]):
+
+def resample_image(itk_image, out_spacing=(1.0, 1.0, 1.0)):
+    """
+    Resample itk_image to new out_spacing
+    :param itk_image:
+    :param out_spacing:
+    :return: the resampled image
+    """
+    # get original spacing and size
     original_spacing = itk_image.GetSpacing()
     original_size = itk_image.GetSize()
-
+    # calculate new size
     out_size = [
         int(np.round(original_size[0] * (original_spacing[0] / out_spacing[0]))),
         int(np.round(original_size[1] * (original_spacing[1] / out_spacing[1]))),
         int(np.round(original_size[2] * (original_spacing[2] / out_spacing[2])))
     ]
-
+    # instantiate resample filter with properties and execute it
     resample = sitk.ResampleImageFilter()
     resample.SetOutputSpacing(out_spacing)
     resample.SetSize(out_size)
@@ -58,7 +65,18 @@ def resample_image(itk_image, out_spacing=[1.0, 1.0, 1.0]):
     return resample.Execute(itk_image)
 
 
-def convert_dicom(input_dir, output_dir, downsample_factor=None, directions=[1, 1, 1], equalization=False):
+def convert_dicom(input_dir, output_dir, downsample_factor=2, downsample_direction=(1, 0, 0),
+                  directions=(1, 1, 1), equalization=True):
+    """
+    Write all dicom series slices into the output directory
+    :param input_dir: the input dir containing DICOM series
+    :param output_dir: the output dir which will contain the output slices
+    :param downsample_factor: if specified also downsample the image
+    :param downsample_direction: if specified the factor also downsample in the direction
+    :param directions: which direction to get
+    :param equalization: set to True to equalize the image
+    :return: void
+    """
     logging.info('Opening directory ' + input_dir)
     # Instantiate a DICOM reader
     reader = sitk.ImageSeriesReader()
@@ -67,114 +85,166 @@ def convert_dicom(input_dir, output_dir, downsample_factor=None, directions=[1, 
     # Execute the reader
     image = reader.Execute()
     logging.info('Image series read')
-    # Equalization of the image, this is slow
-    if equalization:
-        logging.info('Equalization of the image')
-        sitk.AdaptiveHistogramEqualization(image)
+    # Log image size and spacing info BEFORE resample
     size = image.GetSize()
     logging.info('Image size - before resample (px): ' + str(size[0]) + 'x' + str(size[1]) + 'x' + str(size[2]))
     spacing = image.GetSpacing()
     logging.info('Spacing info - before resample (mm): ' + str(spacing[0]) + 'x' + str(spacing[1]) + 'x' +
                  str(spacing[2]))
+    # Resample the image to get 1 px = 1 mm
     image = resample_image(image)
+    # Log image size and spacing info after resample to check everything went good
     size = image.GetSize()
-    orientation_filter = sitk.DICOMOrientImageFilter()
-    orientation_filter.SetDesiredCoordinateOrientation(DesiredCoordinateOrientation='RAI')
-    image = orientation_filter.Execute(image)
     logging.info('Image size - after resample (px): ' + str(size[0]) + 'x' + str(size[1]) + 'x' + str(size[2]))
     spacing = image.GetSpacing()
     logging.info('Spacing info - after resample (mm): ' + str(spacing[0]) + 'x' + str(spacing[1]) + 'x' +
                  str(spacing[2]))
-
+    # Instantiate and execute orientation filter setting to RAI, to guarantee coherence
+    #       across all DICOM images generating slices
+    # RAI means
+    #   X: patient Right to left
+    #   Y: patient Anterior to posterior
+    #   Z: patient Inferior to superior
+    orientation_filter = sitk.DICOMOrientImageFilter()
+    orientation_filter.SetDesiredCoordinateOrientation(DesiredCoordinateOrientation='RAI')
+    image = orientation_filter.Execute(image)
     # Convert to numpy array
-    image_array = sitk.GetArrayFromImage(image)
-    if downsample_factor:
-        image_array = image_array[::downsample_factor, ::downsample_factor, ::downsample_factor]
+    # CARE as this operation goes from (x,y,z) to (z,)
+    # Equalization of the image, this may be slow
+    if equalization:
+        logging.info('Equalization of the image')
+        sitk.AdaptiveHistogramEqualization(image)
+    image_array = sitk.GetArrayViewFromImage(image)
+    # Calculate downsampled image
+    image_array_downsampled = image_array[::downsample_factor, ::downsample_factor, ::downsample_factor]
+
     #
     # Save axial view
     #
     if directions[0] == 1:
-        if downsample_factor:
-            axial_out_dir = output_dir + '\\axial_rescaled\\'
-        else:
-            axial_out_dir = output_dir + '\\axial\\'
-        logging.info('Start saving axial view in ' + axial_out_dir)
-        if os.path.exists(axial_out_dir):
-            shutil.rmtree(axial_out_dir)
-        os.makedirs(axial_out_dir)
+        downsample = True if downsample_factor and downsample_direction[0] == 1 else False
+        if downsample:
+            save_directory_downsample = output_dir + '\\axial_downsample_' + str(downsample_factor) + '\\'
+            if os.path.exists(save_directory_downsample):
+                logging.warning('Deleting old directory ' + save_directory_downsample)
+                shutil.rmtree(save_directory_downsample)
+            os.makedirs(save_directory_downsample)
+        save_directory = output_dir + '\\axial\\'
+        if os.path.exists(save_directory):
+            logging.warning('Deleting old directory ' + save_directory)
+            shutil.rmtree(save_directory)
+        os.makedirs(save_directory)
         # get max and min value for rescaling
-        axial_min = 10000
-        axial_max = -10000
+        min = 99999
+        max = -99999
         for i in range(image_array.shape[0]):
-            if image_array[i, 0, 0].min() < axial_min:
-                axial_min = image_array[i, :, :].min()
-            if image_array[i, 0, 0].max() > axial_max:
-                axial_max = image_array[i, :, :].max()
-        logging.info('Rescaling (axial) - min ' + str(axial_min) + ' max ' + str(axial_max))
+            if image_array[i, :, :].min() < min:
+                min = image_array[i, :, :].min()
+            if image_array[i, :, :].max() > max:
+                max = image_array[i, :, :].max()
+        logging.info('Rescaling (axial) - min ' + str(min) + ' max ' + str(max))
+        logging.info('Start saving axial view in ' + save_directory)
         for i in range(image_array.shape[0]):
-            output_file_name = axial_out_dir + 'axial_' + str(i) + '.png'
+            output_file_name = save_directory + 'axial_' + str(i) + '.png'
             logging.debug('Saving image to ' + output_file_name)
-            imageio.imwrite(output_file_name, convert_img(image_array[i, :, :], axial_min, axial_max), format='png')
+            # TODO test more the image orientation filter to avoid rotating the images
+            imageio.imwrite(output_file_name, convert_img(np.flipud(image_array[i, :, :]), min, max), format='png')
+        if downsample:
+            logging.info('Start saving axial (downlsampled) view in ' + save_directory_downsample)
+            for i in range(image_array_downsampled.shape[0]):
+                output_file_name = save_directory_downsample + 'axial_' + str(i) + '.png'
+                logging.debug('Saving image to ' + output_file_name)
+                imageio.imwrite(output_file_name, convert_img(np.flipud(image_array_downsampled[i, :, :]), min, max),
+                                format='png')
+
     #
     # Save coronal view
     #
     if directions[1] == 1:
-        if downsample_factor:
-            coronal_out_dir = output_dir + '\\coronal_rescaled\\'
-        else:
-            coronal_out_dir = output_dir + '\\coronal\\'
-        logging.info('Start saving coronal view in ' + coronal_out_dir)
-        if os.path.exists(coronal_out_dir):
-            shutil.rmtree(coronal_out_dir)
-        os.makedirs(coronal_out_dir)
+        downsample = True if downsample_factor and downsample_direction[1] == 1 else False
+        if downsample:
+            save_directory_downsample = output_dir + '\\coronal_downsample_' + str(downsample_factor) + '\\'
+            if os.path.exists(save_directory_downsample):
+                logging.warning('Deleting old directory ' + save_directory_downsample)
+                shutil.rmtree(save_directory_downsample)
+            os.makedirs(save_directory_downsample)
+        save_directory = output_dir + '\\coronal\\'
+        if os.path.exists(save_directory):
+            logging.warning('Deleting old directory ' + save_directory)
+            shutil.rmtree(save_directory)
+        os.makedirs(save_directory)
         # get max and min value for rescaling
-        coronal_min = 10000
-        coronal_max = -10000
+        min = 99999
+        max = -99999
         for i in range(image_array.shape[1]):
-            if image_array[:, i, :].min() < coronal_min:
-                coronal_min = image_array[:, i, :].min()
-            if image_array[:, i, :].max() > coronal_max:
-                coronal_max = image_array[:, i, :].max()
-        logging.info('Rescaling (coronal) - min ' + str(coronal_min) + ' max ' + str(coronal_max))
+            if image_array[:, i, :].min() < min:
+                min = image_array[i, :, :].min()
+            if image_array[:, i, :].max() > max:
+                max = image_array[i, :, :].max()
+        logging.info('Rescaling (coronal) - min ' + str(min) + ' max ' + str(max))
+        logging.info('Start saving coronal view in ' + save_directory)
         for i in range(image_array.shape[1]):
-            output_file_name = coronal_out_dir + 'coronal_' + str(i) + '.png'
+            output_file_name = save_directory + 'coronal_' + str(i) + '.png'
             logging.debug('Saving image to ' + output_file_name)
-            imageio.imwrite(output_file_name, convert_img(image_array[:, i, :], coronal_min, coronal_max), format='png')
+            imageio.imwrite(output_file_name, convert_img(image_array[:, i, :], min, max), format='png')
+        if downsample:
+            logging.info('Start saving coronal (downlsampled) view in ' + save_directory_downsample)
+            for i in range(image_array_downsampled.shape[1]):
+                output_file_name = save_directory_downsample + 'coronal_' + str(i) + '.png'
+                logging.debug('Saving image to ' + output_file_name)
+                imageio.imwrite(output_file_name, convert_img(image_array_downsampled[:, i, :], min, max),
+                                format='png')
     #
     # Save sagittal view
     #
     if directions[2] == 1:
-        if downsample_factor:
-            sagittal_out_dir = output_dir + '\\sagittal_rescaled\\'
-        else:
-            sagittal_out_dir = output_dir + '\\sagittal\\'
-        logging.info('Start saving sagittal view in ' + sagittal_out_dir)
-        if os.path.exists(sagittal_out_dir):
-            shutil.rmtree(sagittal_out_dir)
-        os.makedirs(sagittal_out_dir)
+        downsample = True if downsample_factor and downsample_direction[2] == 1 else False
+        if downsample:
+            save_directory_downsample = output_dir + '\\sagittal_downsample_' + str(downsample_factor) + '\\'
+            if os.path.exists(save_directory_downsample):
+                logging.warning('Deleting old directory ' + save_directory_downsample)
+                shutil.rmtree(save_directory_downsample)
+            os.makedirs(save_directory_downsample)
+        save_directory = output_dir + '\\sagittal\\'
+        if os.path.exists(save_directory):
+            logging.warning('Deleting old directory ' + save_directory)
+            shutil.rmtree(save_directory)
+        os.makedirs(save_directory)
         # get max and min value for rescaling
-        sagittal_min = 10000
-        sagittal_max = -10000
+        min = 99999
+        max = -99999
         for i in range(image_array.shape[2]):
-            if image_array[:, :, i].min() < sagittal_min:
-                sagittal_min = image_array[:, :, i].min()
-            if image_array[:, :, i].max() > sagittal_max:
-                sagittal_max = image_array[:, :, i].max()
-        logging.info('Rescaling (sagittal) - min ' + str(sagittal_min) + ' max ' + str(sagittal_max))
+            if image_array[:, :, i].min() < min:
+                min = image_array[:, :, i].min()
+            if image_array[:, :, i].max() > max:
+                max = image_array[:, :, i].max()
+        logging.info('Rescaling (sagittal) - min ' + str(min) + ' max ' + str(max))
+        logging.info('Start saving sagittal view in ' + save_directory)
         for i in range(image_array.shape[2]):
-            output_file_name = sagittal_out_dir + 'sagittal_' + str(i) + '.png'
+            output_file_name = save_directory + 'sagittal_' + str(i) + '.png'
             logging.debug('Saving image to ' + output_file_name)
-            imageio.imwrite(output_file_name, convert_img(image_array[:, :, i], sagittal_min, sagittal_max), format='png')
+            # FIXME test more the image orientation filter to avoid rotating the images
+            imageio.imwrite(output_file_name, convert_img(np.fliplr(image_array[:, :, i]), min, max), format='png')
+        if downsample:
+            logging.info('Start saving sagittal (downlsampled) view in ' + save_directory_downsample)
+            for i in range(image_array_downsampled.shape[2]):
+                output_file_name = save_directory_downsample + 'sagittal_' + str(i) + '.png'
+                logging.debug('Saving image to ' + output_file_name)
+                imageio.imwrite(output_file_name, convert_img(np.fliplr(image_array_downsampled[:, :, i]), min, max),
+                                format='png')
 
 
-def convert_img(img, source_type_min=None, source_type_max=None, target_type_min=0, target_type_max=255, target_type=np.uint8):
+def convert_img(img, source_type_min=None, source_type_max=None, target_type_min=0, target_type_max=255,
+                target_type=np.uint8):
     """
     Convert an image to another type for scaling, to avoid "Lossy conversion from ... to ..." problem
-    :param img: the img
-    :param target_type_min: the min target of scaling, default 0
-    :param target_type_max: the max target of scaling, default 255
-    :param target_type: the target type, default np.uint8
-    :return: the converted image
+    :param img: An image
+    :param source_type_min: the min value for rescaling (source)
+    :param source_type_max: the max value for rescaling (source)
+    :param target_type_min: the min value for rescaling (destination)
+    :param target_type_max: the max value for rescaling (source)
+    :param target_type: target data type
+    :return: the rescaled image
     """
     if not source_type_min:
         imin = img.min()
@@ -196,7 +266,4 @@ if not file_map:
     sys.exit(-1)
 
 for key, value in file_map.items():
-    # Original size
-    convert_dicom(key, value, None, [1, 1, 1], False)
-    # Rescaled axial view
-   #convert_dicom(key, value, 2, [1, 0, 0], True)
+    convert_dicom(key, value)
