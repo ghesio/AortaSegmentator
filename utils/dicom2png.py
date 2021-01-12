@@ -37,6 +37,26 @@ def read_all_directories():
         file_map[dir] = dir.replace('in', 'out')
     return file_map
 
+def resample_image(itk_image, out_spacing=[1.0, 1.0, 1.0]):
+    original_spacing = itk_image.GetSpacing()
+    original_size = itk_image.GetSize()
+
+    out_size = [
+        int(np.round(original_size[0] * (original_spacing[0] / out_spacing[0]))),
+        int(np.round(original_size[1] * (original_spacing[1] / out_spacing[1]))),
+        int(np.round(original_size[2] * (original_spacing[2] / out_spacing[2])))
+    ]
+
+    resample = sitk.ResampleImageFilter()
+    resample.SetOutputSpacing(out_spacing)
+    resample.SetSize(out_size)
+    resample.SetOutputDirection(itk_image.GetDirection())
+    resample.SetOutputOrigin(itk_image.GetOrigin())
+    resample.SetTransform(sitk.Transform())
+    resample.SetDefaultPixelValue(itk_image.GetPixelIDValue())
+    resample.SetInterpolator(sitk.sitkNearestNeighbor)
+    return resample.Execute(itk_image)
+
 
 def convert_dicom(input_dir, output_dir, downsample_factor=None, directions=[1, 1, 1], equalization=False):
     logging.info('Opening directory ' + input_dir)
@@ -52,9 +72,19 @@ def convert_dicom(input_dir, output_dir, downsample_factor=None, directions=[1, 
         logging.info('Equalization of the image')
         sitk.AdaptiveHistogramEqualization(image)
     size = image.GetSize()
+    logging.info('Image size - before resample (px): ' + str(size[0]) + 'x' + str(size[1]) + 'x' + str(size[2]))
     spacing = image.GetSpacing()
-    logging.info('Image size (px): ' + str(size[0]) + 'x' + str(size[1]) + 'x' + str(size[2]))
-    logging.info('Spacing info (mm): ' + str(spacing[0]) + 'x' + str(spacing[1]) + 'x' + str(spacing[2]))
+    logging.info('Spacing info - before resample (mm): ' + str(spacing[0]) + 'x' + str(spacing[1]) + 'x' +
+                 str(spacing[2]))
+    image = resample_image(image)
+    size = image.GetSize()
+    # set RAI direction
+    image.SetDirection([1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0])
+    logging.info('Image size - after resample (px): ' + str(size[0]) + 'x' + str(size[1]) + 'x' + str(size[2]))
+    spacing = image.GetSpacing()
+    logging.info('Spacing info - after resample (mm): ' + str(spacing[0]) + 'x' + str(spacing[1]) + 'x' +
+                 str(spacing[2]))
+
     # Convert to numpy array
     image_array = sitk.GetArrayFromImage(image)
     if downsample_factor:
@@ -168,4 +198,4 @@ for key, value in file_map.items():
     # Original size
     convert_dicom(key, value, None, [1, 1, 1], False)
     # Rescaled axial view
-    convert_dicom(key, value, 2, [1, 0, 0], True)
+   #convert_dicom(key, value, 2, [1, 0, 0], True)
