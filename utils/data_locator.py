@@ -104,7 +104,6 @@ for root, dirs, files in os.walk('../data/out'):
 data_map = {}
 for dir in dir_names:
     patient_id = re.sub(r"^.*?data\\out\\", '', dir).split("\\", 1)[0]
-    new_data = DataLocator(patient_id)
     if patient_id not in data_map:
         data_map[patient_id] = {}
     # get information about informative images in 'roi' dir
