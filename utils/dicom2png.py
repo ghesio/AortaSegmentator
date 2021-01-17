@@ -2,6 +2,11 @@
 # https://dicom.innolitics.com/ciods/ct-image/image-plane/00280030
 # http://dicomiseasy.blogspot.com/2013/06/getting-oriented-using-image-plane.html
 
+"""
+Slices DICOM series file in data/in/patient_id_1, data/in/patient_id_2, ... into
+data/out/patient_id_1/, data/in/patient_id_2 with all views and eventual downsampled views
+"""
+
 import os
 import sys
 import shutil
@@ -16,7 +21,7 @@ logging.basicConfig(
     level=logging.INFO,
     datefmt='%Y-%m-%d %H:%M:%S',
     handlers=[
-        logging.FileHandler("../info.log"),
+        logging.FileHandler("../slicer.log"),
         logging.StreamHandler()
     ]
 )
@@ -40,8 +45,8 @@ def read_all_directories():
 def resample_image(itk_image, out_spacing=(1.0, 1.0, 1.0)):
     """
     Resample itk_image to new out_spacing
-    :param itk_image:
-    :param out_spacing:
+    :param itk_image: the input image
+    :param out_spacing: the desired spacing
     :return: the resampled image
     """
     # get original spacing and size
@@ -145,14 +150,14 @@ def convert_dicom(input_dir, output_dir, downsample_factor=2, downsample_directi
         logging.info('Rescaling (axial) - min ' + str(min) + ' max ' + str(max))
         logging.info('Start saving axial view in ' + save_directory)
         for i in range(image_array.shape[0]):
-            output_file_name = save_directory + 'axial_' + str(i) + '.png'
+            output_file_name = save_directory + 'axial_' + str(i).zfill(4) + '.png'
             logging.debug('Saving image to ' + output_file_name)
             # TODO test more the image orientation filter to avoid rotating the images
             imageio.imwrite(output_file_name, convert_img(np.flipud(image_array[i, :, :]), min, max), format='png')
         if downsample:
             logging.info('Start saving axial (downlsampled) view in ' + save_directory_downsample)
             for i in range(image_array_downsampled.shape[0]):
-                output_file_name = save_directory_downsample + 'axial_' + str(i) + '.png'
+                output_file_name = save_directory_downsample + 'axial_' + str(i).zfill(4) + '.png'
                 logging.debug('Saving image to ' + output_file_name)
                 imageio.imwrite(output_file_name, convert_img(np.flipud(image_array_downsampled[i, :, :]), min, max),
                                 format='png')
@@ -184,13 +189,13 @@ def convert_dicom(input_dir, output_dir, downsample_factor=2, downsample_directi
         logging.info('Rescaling (coronal) - min ' + str(min) + ' max ' + str(max))
         logging.info('Start saving coronal view in ' + save_directory)
         for i in range(image_array.shape[1]):
-            output_file_name = save_directory + 'coronal_' + str(i) + '.png'
+            output_file_name = save_directory + 'coronal_' + str(i).zfill(4) + '.png'
             logging.debug('Saving image to ' + output_file_name)
             imageio.imwrite(output_file_name, convert_img(image_array[:, i, :], min, max), format='png')
         if downsample:
             logging.info('Start saving coronal (downlsampled) view in ' + save_directory_downsample)
             for i in range(image_array_downsampled.shape[1]):
-                output_file_name = save_directory_downsample + 'coronal_' + str(i) + '.png'
+                output_file_name = save_directory_downsample + 'coronal_' + str(i).zfill(4) + '.png'
                 logging.debug('Saving image to ' + output_file_name)
                 imageio.imwrite(output_file_name, convert_img(image_array_downsampled[:, i, :], min, max),
                                 format='png')
@@ -221,14 +226,14 @@ def convert_dicom(input_dir, output_dir, downsample_factor=2, downsample_directi
         logging.info('Rescaling (sagittal) - min ' + str(min) + ' max ' + str(max))
         logging.info('Start saving sagittal view in ' + save_directory)
         for i in range(image_array.shape[2]):
-            output_file_name = save_directory + 'sagittal_' + str(i) + '.png'
+            output_file_name = save_directory + 'sagittal_' + str(i).zfill(4) + '.png'
             logging.debug('Saving image to ' + output_file_name)
             # FIXME test more the image orientation filter to avoid rotating the images
             imageio.imwrite(output_file_name, convert_img(np.fliplr(image_array[:, :, i]), min, max), format='png')
         if downsample:
             logging.info('Start saving sagittal (downlsampled) view in ' + save_directory_downsample)
             for i in range(image_array_downsampled.shape[2]):
-                output_file_name = save_directory_downsample + 'sagittal_' + str(i) + '.png'
+                output_file_name = save_directory_downsample + 'sagittal_' + str(i).zfill(4) + '.png'
                 logging.debug('Saving image to ' + output_file_name)
                 imageio.imwrite(output_file_name, convert_img(np.fliplr(image_array_downsampled[:, :, i]), min, max),
                                 format='png')
@@ -267,3 +272,4 @@ if not file_map:
 
 for key, value in file_map.items():
     convert_dicom(key, value)
+sys.exit(0)
