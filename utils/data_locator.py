@@ -40,11 +40,6 @@ logging.basicConfig(
 )
 
 
-class DataLocator:
-    def __init__(self, patient_id):
-        self._patient_id = patient_id
-
-
 def read_image_information_in_directory(directory):
     for root, dirs, files in os.walk(directory):
         if files:
