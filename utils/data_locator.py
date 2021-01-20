@@ -101,52 +101,55 @@ dir_names = []
 for root, dirs, files in os.walk('../data/out'):
     if not dirs:
         dir_names += [os.path.abspath(root)]
-data_map = {}
+patient_map = {}
 for dir in dir_names:
     patient_id = re.sub(r"^.*?data\\out\\", '', dir).split("\\", 1)[0]
-    if patient_id not in data_map:
-        data_map[patient_id] = {}
+    if patient_id not in patient_map:
+        patient_map[patient_id] = {}
     # get information about informative images in 'roi' dir
     if 'roi' in dir:
-        data_map[patient_id]['roi_dir'] = remove_everything_after_last(dir)
+        patient_map[patient_id]['roi_dir'] = remove_everything_after_last(dir)
         logging.info('Opening directory ' + dir)
         info = read_image_information_in_directory(dir)
         if 'axial' in dir and 'axial_downsample_' not in dir:
-            data_map[patient_id]['axial'] = {}
-            data_map[patient_id]['axial']['min_slice'] = info[0][0]
-            data_map[patient_id]['axial']['max_slice'] = info[0][1]
-            data_map[patient_id]['axial']['min_pixel_0'] = info[1][0]
-            data_map[patient_id]['axial']['min_pixel_1'] = info[1][1]
-            data_map[patient_id]['axial']['max_pixel_0'] = info[2][0]
-            data_map[patient_id]['axial']['max_pixel_1'] = info[2][1]
+            # Y-X plane
+            patient_map[patient_id]['axial'] = {}
+            patient_map[patient_id]['axial']['min_slice'] = info[0][0]
+            patient_map[patient_id]['axial']['max_slice'] = info[0][1]
+            patient_map[patient_id]['axial']['min_y'] = info[1][0]
+            patient_map[patient_id]['axial']['min_x'] = info[1][1]
+            patient_map[patient_id]['axial']['max_y'] = info[2][0]
+            patient_map[patient_id]['axial']['max_x'] = info[2][1]
         elif 'axial_downsample_' in dir:
-            data_map[patient_id]['axial_downsample'] = {}
-            data_map[patient_id]['axial_downsample']['min_slice'] = info[0][0]
-            data_map[patient_id]['axial_downsample']['max_slice'] = info[0][1]
-            data_map[patient_id]['axial_downsample']['min_pixel_0'] = info[1][0]
-            data_map[patient_id]['axial_downsample']['min_pixel_1'] = info[1][1]
-            data_map[patient_id]['axial_downsample']['max_pixel_0'] = info[2][0]
-            data_map[patient_id]['axial_downsample']['max_pixel_1'] = info[2][1]
+            # Y-X plane
+            patient_map[patient_id]['axial_downsample'] = {}
+            patient_map[patient_id]['axial_downsample']['min_slice'] = info[0][0]
+            patient_map[patient_id]['axial_downsample']['max_slice'] = info[0][1]
+            patient_map[patient_id]['axial_downsample']['min_y'] = info[1][0]
+            patient_map[patient_id]['axial_downsample']['min_x'] = info[1][1]
+            patient_map[patient_id]['axial_downsample']['max_y'] = info[2][0]
+            patient_map[patient_id]['axial_downsample']['max_x'] = info[2][1]
         elif 'coronal' in dir:
-            data_map[patient_id]['coronal'] = {}
-            data_map[patient_id]['coronal']['min_slice'] = info[0][0]
-            data_map[patient_id]['coronal']['max_slice'] = info[0][1]
-            data_map[patient_id]['coronal']['min_pixel_0'] = info[1][0]
-            data_map[patient_id]['coronal']['min_pixel_1'] = info[1][1]
-            data_map[patient_id]['coronal']['max_pixel_0'] = info[2][0]
-            data_map[patient_id]['coronal']['max_pixel_1'] = info[2][1]
+            # Z-X plane
+            patient_map[patient_id]['coronal'] = {}
+            patient_map[patient_id]['coronal']['min_slice'] = info[0][0]
+            patient_map[patient_id]['coronal']['max_slice'] = info[0][1]
+            patient_map[patient_id]['coronal']['min_z'] = info[1][0]
+            patient_map[patient_id]['coronal']['min_x'] = info[1][1]
+            patient_map[patient_id]['coronal']['max_z'] = info[2][0]
+            patient_map[patient_id]['coronal']['max_x'] = info[2][1]
         elif 'sagittal' in dir:
-            data_map[patient_id]['sagittal'] = {}
-            data_map[patient_id]['sagittal']['min_slice'] = info[0][0]
-            data_map[patient_id]['sagittal']['max_slice'] = info[0][1]
-            data_map[patient_id]['sagittal']['min_pixel_0'] = info[1][0]
-            data_map[patient_id]['sagittal']['min_pixel_1'] = info[1][1]
-            data_map[patient_id]['sagittal']['max_pixel_0'] = info[2][0]
-            data_map[patient_id]['sagittal']['max_pixel_1'] = info[2][1]
+            patient_map[patient_id]['sagittal'] = {}
+            patient_map[patient_id]['sagittal']['min_slice'] = info[0][0]
+            patient_map[patient_id]['sagittal']['max_slice'] = info[0][1]
+            patient_map[patient_id]['sagittal']['min_z'] = info[1][0]
+            patient_map[patient_id]['sagittal']['min_x'] = info[1][1]
+            patient_map[patient_id]['sagittal']['max_y'] = info[2][0]
+            patient_map[patient_id]['sagittal']['max_y'] = info[2][1]
     else:
-        data_map[patient_id]['scan_dir'] = remove_everything_after_last(dir)
+        patient_map[patient_id]['scan_dir'] = remove_everything_after_last(dir)
 
 logging.info("Writing JSON info file")
 with open('../data/info.json', 'w') as outfile:
-    json.dump(data_map, outfile, indent=4, sort_keys= True)
+    json.dump(patient_map, outfile, indent=4)
 exit(0)
