@@ -70,7 +70,7 @@ def resample_image(itk_image, out_spacing=(1.0, 1.0, 1.0)):
     return resample.Execute(itk_image)
 
 
-def convert_dicom(input_dir, output_dir, downsample_factor=2, downsample_direction=(1, 0, 0),
+def convert_dicom(input_dir, output_dir, downsample_factor=2, downsample_direction=(0, 0, 0),
                   directions=(1, 1, 1), equalization=True):
     """
     Write all dicom series slices into the output directory
@@ -116,10 +116,15 @@ def convert_dicom(input_dir, output_dir, downsample_factor=2, downsample_directi
     # Convert to numpy array
     # CARE as this operation goes from (x,y,z) to (z,)
     # Equalization of the image, this may be slow
-    if equalization:
+    if equalization and 'roi' not in input_dir:
         logging.info('Equalization of the image')
         sitk.AdaptiveHistogramEqualization(image)
-    image_array = sitk.GetArrayViewFromImage(image)
+    image_array = sitk.GetArrayFromImage(image)
+    if 'roi' in input_dir:
+        # set B/W the image
+        background_color = image_array[0][0][0]
+        image_array[image_array == background_color] = 0
+        image_array[image_array != 0] = 255
     # Calculate downsampled image
     image_array_downsampled = image_array[::downsample_factor, ::downsample_factor, ::downsample_factor]
 
