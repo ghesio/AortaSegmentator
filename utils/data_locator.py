@@ -148,5 +148,5 @@ for dir in dir_names:
 
 logging.info("Writing JSON info file")
 with open('../data/info.json', 'w') as outfile:
-    json.dump(data_map, outfile)
+    json.dump(data_map, outfile, indent=4, sort_keys= True)
 exit(0)
