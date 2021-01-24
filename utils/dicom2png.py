@@ -14,6 +14,8 @@ import SimpleITK as sitk
 import numpy as np
 import imageio
 import logging
+import math
+
 
 # Set logging
 logging.basicConfig(
@@ -119,6 +121,7 @@ def convert_dicom(input_dir, output_dir, downsample_factor=2, downsample_directi
     if equalization and 'roi' not in input_dir:
         logging.info('Equalization of the image')
         sitk.AdaptiveHistogramEqualization(image)
+    # !!CARE!! the indexing is image_array[z,y,x]
     image_array = sitk.GetArrayFromImage(image)
     if 'roi' in input_dir:
         # set B/W the image
@@ -154,14 +157,23 @@ def convert_dicom(input_dir, output_dir, downsample_factor=2, downsample_directi
                 max = image_array[i, :, :].max()
         logging.info('Rescaling (axial) - min ' + str(min) + ' max ' + str(max))
         logging.info('Start saving axial view in ' + save_directory)
+        last_progress = None
         for i in range(image_array.shape[0]):
+            if math.floor(i*100/image_array.shape[0]) % 10 == 0 and math.floor(i*100/image_array.shape[0]) != last_progress:
+                logging.info(str(math.floor(i*100/image_array.shape[0])) + ' %')
+                last_progress = math.floor(i*100/image_array.shape[0])
             output_file_name = save_directory + 'axial_' + str(i).zfill(4) + '.png'
             logging.debug('Saving image to ' + output_file_name)
             # TODO test more the image orientation filter to avoid rotating the images
             imageio.imwrite(output_file_name, convert_img(np.flipud(image_array[i, :, :]), min, max), format='png')
         if downsample:
             logging.info('Start saving axial (downlsampled) view in ' + save_directory_downsample)
+            last_progress = None
             for i in range(image_array_downsampled.shape[0]):
+                if math.floor(i * 100 / image_array_downsampled.shape[0]) % 10 == 0 and math.floor(
+                        i * 100 / image_array_downsampled.shape[0]) != last_progress:
+                    logging.info(str(math.floor(i * 100 / image_array_downsampled.shape[0])) + ' %')
+                    last_progress = math.floor(i * 100 / image_array_downsampled.shape[0])
                 output_file_name = save_directory_downsample + 'axial_' + str(i).zfill(4) + '.png'
                 logging.debug('Saving image to ' + output_file_name)
                 imageio.imwrite(output_file_name, convert_img(np.flipud(image_array_downsampled[i, :, :]), min, max),
@@ -193,13 +205,23 @@ def convert_dicom(input_dir, output_dir, downsample_factor=2, downsample_directi
                 max = image_array[i, :, :].max()
         logging.info('Rescaling (coronal) - min ' + str(min) + ' max ' + str(max))
         logging.info('Start saving coronal view in ' + save_directory)
+        last_progress = None
         for i in range(image_array.shape[1]):
+            if math.floor(i * 100 / image_array.shape[1]) % 10 == 0 and math.floor(
+                    i * 100 / image_array.shape[1]) != last_progress:
+                logging.info(str(math.floor(i * 100 / image_array.shape[1])) + ' %')
+                last_progress = math.floor(i * 100 / image_array.shape[1])
             output_file_name = save_directory + 'coronal_' + str(i).zfill(4) + '.png'
             logging.debug('Saving image to ' + output_file_name)
             imageio.imwrite(output_file_name, convert_img(image_array[:, i, :], min, max), format='png')
         if downsample:
             logging.info('Start saving coronal (downlsampled) view in ' + save_directory_downsample)
+            last_progress = None
             for i in range(image_array_downsampled.shape[1]):
+                if math.floor(i * 100 / image_array_downsampled.shape[1]) % 10 == 0 and math.floor(
+                        i * 100 / image_array_downsampled.shape[1]) != last_progress:
+                    logging.info(str(math.floor(i * 100 / image_array_downsampled.shape[1])) + ' %')
+                    last_progress = math.floor(i * 100 / image_array_downsampled.shape[1])
                 output_file_name = save_directory_downsample + 'coronal_' + str(i).zfill(4) + '.png'
                 logging.debug('Saving image to ' + output_file_name)
                 imageio.imwrite(output_file_name, convert_img(image_array_downsampled[:, i, :], min, max),
@@ -230,14 +252,24 @@ def convert_dicom(input_dir, output_dir, downsample_factor=2, downsample_directi
                 max = image_array[:, :, i].max()
         logging.info('Rescaling (sagittal) - min ' + str(min) + ' max ' + str(max))
         logging.info('Start saving sagittal view in ' + save_directory)
+        last_progress = None
         for i in range(image_array.shape[2]):
+            if math.floor(i * 100 / image_array.shape[2]) % 10 == 0 and math.floor(
+                    i * 100 / image_array.shape[2]) != last_progress:
+                logging.info(str(math.floor(i * 100 / image_array.shape[2])) + ' %')
+                last_progress = math.floor(i * 100 / image_array.shape[2])
             output_file_name = save_directory + 'sagittal_' + str(i).zfill(4) + '.png'
             logging.debug('Saving image to ' + output_file_name)
             # FIXME test more the image orientation filter to avoid rotating the images
             imageio.imwrite(output_file_name, convert_img(np.fliplr(image_array[:, :, i]), min, max), format='png')
         if downsample:
             logging.info('Start saving sagittal (downlsampled) view in ' + save_directory_downsample)
+            last_progress = None
             for i in range(image_array_downsampled.shape[2]):
+                if math.floor(i * 100 / image_array_downsampled.shape[2]) % 10 == 0 and math.floor(
+                        i * 100 / image_array_downsampled.shape[2]) != last_progress:
+                    logging.info(str(math.floor(i * 100 / image_array_downsampled.shape[2])) + ' %')
+                    last_progress = math.floor(i * 100 / image_array_downsampled.shape[2])
                 output_file_name = save_directory_downsample + 'sagittal_' + str(i).zfill(4) + '.png'
                 logging.debug('Saving image to ' + output_file_name)
                 imageio.imwrite(output_file_name, convert_img(np.fliplr(image_array_downsampled[:, :, i]), min, max),
