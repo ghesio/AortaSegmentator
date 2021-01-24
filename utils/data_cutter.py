@@ -87,6 +87,13 @@ for patient in patient_map:
         min_z = patient_map[patient]['coronal']['min_z']
     if patient_map[patient]['coronal']['max_z'] > max_z:
         max_z = patient_map[patient]['coronal']['max_z']
+    patient_map[patient]['roi_cut_dir'] = patient_map[patient]['roi_dir'].replace('roi', 'roi_cut')
+    patient_map[patient]['scan_cut_dir'] = patient_map[patient]['scan_dir'].replace('scan', 'scan_cut')
+
+logging.info("Updating JSON info file")
+with open('../data/info.json', 'w') as outfile:
+    json.dump(patient_map, outfile, indent=4)
+
 
 # calculate delta
 delta_x = max_x - min_x
@@ -103,7 +110,6 @@ logging.info("Buonding box location (x,y,z): (" + str(min_x) + "-" + str(max_x) 
 
 if dry_run:
     exit(1)
-
 
 # iterate through directories
 dir_names = []
