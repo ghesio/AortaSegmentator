@@ -115,12 +115,11 @@ def convert_dicom(input_dir, output_dir, downsample_factor=2, downsample_directi
     orientation_filter = sitk.DICOMOrientImageFilter()
     orientation_filter.SetDesiredCoordinateOrientation(DesiredCoordinateOrientation='RAI')
     image = orientation_filter.Execute(image)
-    # Convert to numpy array
-    # CARE as this operation goes from (x,y,z) to (z,)
     # Equalization of the image, this may be slow
     if equalization and 'roi' not in input_dir:
         logging.info('Equalization of the image')
         sitk.AdaptiveHistogramEqualization(image)
+    # Convert to numpy array
     # !!CARE!! the indexing is image_array[z,y,x]
     image_array = sitk.GetArrayFromImage(image)
     if 'roi' in input_dir:

@@ -111,6 +111,7 @@ for dir in dir_names:
         patient_map[patient_id]['roi_dir'] = remove_everything_after_last(dir)
         logging.info('Opening directory ' + dir)
         info = read_image_information_in_directory(dir)
+        # TODO extends for other downsampled directories as needed
         if 'axial' in dir and 'axial_downsample_' not in dir:
             # Y-X plane
             patient_map[patient_id]['axial'] = {}
