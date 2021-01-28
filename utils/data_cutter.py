@@ -118,10 +118,10 @@ while True:
         break
     else:
         i = i+1
-logging.info("Buonding box location (padded) (x,y,z): (" + str(center_x - new_side_x/2) + "-" + str(center_x +
-                    new_side_x/2) + ") x (" + str(center_y - new_side_y/2) + "-" + str(center_y +
-                    new_side_y/2) + ") x (" + str(center_z - new_side_z/2) + "-" + str(center_z +
-                    new_side_z/2) + ")")
+logging.info("Buonding box location (padded) (x,y,z): (" + str(int(center_x - new_side_x/2)) + "-" + str(int(center_x +
+                    new_side_x/2)) + ") x (" + str(int(center_y - new_side_y/2)) + "-" + str(int(center_y +
+                    new_side_y/2)) + ") x (" + str(int(center_z - new_side_z/2)) + "-" + str(int(center_z +
+                    new_side_z/2)) + ")")
 
 
 if dry_run:
