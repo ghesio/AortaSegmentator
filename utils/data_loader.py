@@ -2,9 +2,9 @@ import json
 import numpy as np
 import imageio
 from utils import data_augmentation as da
+from sklearn.model_selection import train_test_split
 
-
-def get_data_set(direction, samples_from_each_patient=20):
+def get_data_set(direction, samples_from_each_patient=20, ratio_train = 0.8, ratio_val = 0.1, ratio_test = 0.1):
     if direction is not 'axial' or direction is not 'axial' or direction is not 'axial':
         return -1
     # define max and min intervals for data augmentation
@@ -59,9 +59,19 @@ def get_data_set(direction, samples_from_each_patient=20):
             for shift in shift_array:
                 scan_array.append(da.shift_image(current_slice, shift, axis=0))
                 roi_array.append(current_roi)
-    return scan_array, roi_array
+    # split in train-test-validation
+    x_remaining, x_test, y_remaining, y_test = train_test_split(scan_array, roi_array, random_state=42,
+                                                                test_size=ratio_test)
+    # adjusts val ratio, w.r.t. remaining dataset
+    ratio_remaining = 1 - ratio_test
+    ratio_val_adjusted = ratio_val / ratio_remaining
+
+    # Produces train and val splits.
+    x_train, x_val, y_train, y_val = train_test_split(
+        x_remaining, y_remaining, random_state=42, test_size=ratio_val_adjusted)
+    return x_train, x_test, x_val, y_train, y_test, y_val
 
 
 ret = get_data_set("axial")
-print(len(ret[0]), len(ret[1]))
+print(len(ret[0]), len(ret[1]), len(ret[2]), len(ret[3]), len(ret[4]), len(ret[5]))
 exit(0)

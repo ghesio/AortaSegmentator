@@ -51,5 +51,4 @@ def check_slice_integrity(axial_array, coronal_array, sagittal_array):
             for k in range(lenght_k): #X
                 if axial_array[i][j][k] != coronal_array[j][i][k] and axial_array[i][j][k] != sagittal_array[i][k][j]:
                     exit(-1)
-
     exit(0)
