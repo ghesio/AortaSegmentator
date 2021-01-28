@@ -53,4 +53,3 @@ def check_slice_integrity(axial_array, coronal_array, sagittal_array):
                     exit(-1)
 
     exit(0)
-

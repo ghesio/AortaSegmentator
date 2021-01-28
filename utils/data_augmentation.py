@@ -90,5 +90,5 @@ def test():
     plt.show()
 
 
-test()
-exit(0)
+#test()
+#exit(0)
