@@ -17,9 +17,6 @@ logging.basicConfig(
 )
 
 # Initialize globals
-delta_x = None
-delta_y = None
-delta_z = None
 min_x = 99999
 max_x = -99999
 min_y = 99999
@@ -48,26 +45,18 @@ def cut(directory):
                 current_image = np.array(imageio.imread(uri=current_image_path), dtype='uint8')
                 cut_image = None
                 if 'axial' in root:
-                    cut_image = current_image[center_y - math.ceil(delta_y/2) -
-                                              bounding_delta:center_y + math.ceil(delta_y/2) + bounding_delta,
-                                center_x - math.ceil(delta_x/2) - bounding_delta:center_x + math.ceil(delta_x/2) +
-                                                                                  bounding_delta ]
+                    cut_image = current_image[center_y - int(new_side_y/2):center_y + int(new_side_y/2),
+                                center_x - int(new_side_x/2):center_x + int(new_side_x/2)]
                 if 'coronal' in root:
-                    cut_image = current_image[center_z - math.ceil(delta_z/2) -
-                                              bounding_delta:center_z + math.ceil(delta_z/2) + bounding_delta,
-                                center_x - math.ceil(delta_x/2) - bounding_delta:center_x + math.ceil(delta_x/2) +
-                                                                                 bounding_delta]
+                    cut_image = current_image[center_z - int(new_side_z/2):center_z + int(new_side_z/2),
+                                center_x - int(new_side_x/2):center_x + int(new_side_x/2)]
                 if 'sagittal' in root:
-                    cut_image = current_image[center_z - math.ceil(delta_z/2) -
-                                              bounding_delta:center_z + math.ceil(delta_z/2) + bounding_delta,
-                                center_y - math.ceil(delta_y/2) - bounding_delta:center_y + math.ceil(delta_y/2) +
-                                bounding_delta]
+                    cut_image = current_image[center_z - int(new_side_z/2):center_z + int(new_side_z/2),
+                                center_y - int(new_side_y/2):center_y + int(new_side_y/2)]
                 logging.debug('Saving image to ' + out_image_path)
                 imageio.imwrite(out_image_path, cut_image, format='png')
 
 
-# delta for bounding box
-bounding_delta = 10
 # dry run flag
 dry_run = False
 # read JSON containing information
@@ -94,19 +83,46 @@ logging.info("Updating JSON info file")
 with open('../data/info.json', 'w') as outfile:
     json.dump(patient_map, outfile, indent=4)
 
+logging.info("Buonding box location (before padding) (x,y,z): (" + str(min_x) + "-" + str(max_x) + ") x (" +
+             str(min_y) + "-" + str(max_y) + ") x (" + str(min_z) + "-" + str(max_z) + ")")
 
-# calculate delta
+# get max side value to pad to 32px multiple
 delta_x = max_x - min_x
 delta_y = max_y - min_y
 delta_z = max_z - min_z
-
 # calculate center
-center_x = math.ceil((max_x + min_x)/2)
-center_y = math.ceil((max_y + min_y)/2)
-center_z = math.ceil((max_z + min_z)/2)
+center_x = math.ceil((max_x + min_x) / 2)
+center_y = math.ceil((max_y + min_y) / 2)
+center_z = math.ceil((max_z + min_z) / 2)
+i = 1
+new_side_x = None
+new_side_y = None
+new_side_z = None
+while True:
+    if delta_x < 32 * i:
+        new_side_x = int(32 * i)
+        break
+    else:
+        i = i+1
+i = 1
+while True:
+    if delta_y < 32 * i:
+        new_side_y = int(32 * i)
+        break
+    else:
+        i = i+1
+i = 1
+while True:
+    if delta_z < 32 * i:
+        new_side_z = int(32 * i)
+        break
+    else:
+        i = i+1
+logging.info("Buonding box location (padded) (x,y,z): (" + str(center_x - new_side_x/2) + "-" + str(center_x +
+                    new_side_x/2) + ") x (" + str(center_y - new_side_y/2) + "-" + str(center_y +
+                    new_side_y/2) + ") x (" + str(center_z - new_side_z/2) + "-" + str(center_z +
+                    new_side_z/2) + ")")
 
-logging.info("Buonding box location (x,y,z): (" + str(min_x) + "-" + str(max_x) + ") x (" +
-             str(min_y) + "-" + str(max_y) + ") x (" + str(min_z) + "-" + str(max_z) + ")")
 
 if dry_run:
     exit(1)
