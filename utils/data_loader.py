@@ -3,9 +3,9 @@ import numpy as np
 import imageio
 from utils import data_augmentation as da
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
 
-def get_data_set(direction, samples_from_each_patient=20, ratio_val=0.1, ratio_test=0.1, normalization = True,
+
+def get_data_set(direction, samples_from_each_patient=20, ratio_val=0.1, ratio_test=0.1, normalization=True,
                  augmentation=True):
     """
     Load the dataset used to train the network
@@ -38,7 +38,7 @@ def get_data_set(direction, samples_from_each_patient=20, ratio_val=0.1, ratio_t
         min_slice_index = patient_map[patient][direction]['min_slice']
         max_slice_index = patient_map[patient][direction]['max_slice']
         # draw random samples from the slices to load them
-        random_indexes = np.random.randint(min_slice_index, max_slice_index, samples_from_each_patient)
+        random_indexes = np.random.randint(min_slice_index, max_slice_index - 1, samples_from_each_patient)
         scan_slices = []
         roi_slices = []
         # load the slices from disk
@@ -87,9 +87,9 @@ def get_data_set(direction, samples_from_each_patient=20, ratio_val=0.1, ratio_t
     x_train, x_val, y_train, y_val = train_test_split(
         x_remaining, y_remaining, random_state=42, test_size=ratio_val_adjusted)
     # return splitted dataset
-    return x_train, x_test, x_val, y_train, y_test, y_val
+    return np.array(x_train), np.array(x_test), np.array(x_val), np.array(y_train), np.array(y_test), np.array(y_val)
 
 
-ret = get_data_set("axial", augmentation=False)
-print(len(ret[0]), len(ret[1]), len(ret[2]), len(ret[3]), len(ret[4]), len(ret[5]))
-exit(0)
+#ret = get_data_set("axial", augmentation=False)
+#print(ret[0].shape, ret[1].shape, ret[2].shape, ret[3].shape, ret[4].shape, ret[5].shape)
+#exit(0)
