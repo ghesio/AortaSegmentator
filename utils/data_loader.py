@@ -4,8 +4,18 @@ import imageio
 from utils import data_augmentation as da
 from sklearn.model_selection import train_test_split
 
-def get_data_set(direction, samples_from_each_patient=20, ratio_train = 0.8, ratio_val = 0.1, ratio_test = 0.1):
-    if direction is not 'axial' or direction is not 'axial' or direction is not 'axial':
+
+def get_data_set(direction, samples_from_each_patient=20, ratio_val=0.1, ratio_test=0.1, augmentation=True):
+    """
+    Load the dataset used to train the network
+    :param direction: choose which direction (axial, coronal, sagittal)
+    :param samples_from_each_patient: the number of samples to be drawn from all patients
+    :param ratio_val: validation set ratio
+    :param ratio_test: test set ration
+    :param augmentation: if True augment data using rotation, zoom and shifts
+    :return: the splitted dataset or -1 if a wrong direction is chose
+    """
+    if direction is not 'axial' or direction is not 'coronal' or direction is not 'sagittal':
         return -1
     # define max and min intervals for data augmentation
     shift_array = np.array(np.arange(-5, 1 + 5, 1))
@@ -43,35 +53,36 @@ def get_data_set(direction, samples_from_each_patient=20, ratio_train = 0.8, rat
             # add to data set withut augmentation
             scan_array.append(current_slice)
             roi_array.append(current_roi)
-            # augment using zoom
-            for zoom in zoom_array:
-                scan_array.append(da.zoom_image(current_slice, zoom))
-                roi_array.append(current_roi)
-            # augment using rotation
-            for angle in rotation_array:
-                scan_array.append(da.rotate_image(current_slice, angle))
-                roi_array.append(current_roi)
-            # augment using horizontal shift
-            for shift in shift_array:
-                scan_array.append(da.shift_image(current_slice, shift, axis=1))
-                roi_array.append(current_roi)
-            # augment using vertical shift
-            for shift in shift_array:
-                scan_array.append(da.shift_image(current_slice, shift, axis=0))
-                roi_array.append(current_roi)
+            if augmentation:
+                # augment using zoom
+                for zoom in zoom_array:
+                    scan_array.append(da.zoom_image(current_slice, zoom))
+                    roi_array.append(current_roi)
+                # augment using rotation
+                for angle in rotation_array:
+                    scan_array.append(da.rotate_image(current_slice, angle))
+                    roi_array.append(current_roi)
+                # augment using horizontal shift
+                for shift in shift_array:
+                    scan_array.append(da.shift_image(current_slice, shift, axis=1))
+                    roi_array.append(current_roi)
+                # augment using vertical shift
+                for shift in shift_array:
+                    scan_array.append(da.shift_image(current_slice, shift, axis=0))
+                    roi_array.append(current_roi)
     # split in train-test-validation
     x_remaining, x_test, y_remaining, y_test = train_test_split(scan_array, roi_array, random_state=42,
                                                                 test_size=ratio_test)
     # adjusts val ratio, w.r.t. remaining dataset
     ratio_remaining = 1 - ratio_test
     ratio_val_adjusted = ratio_val / ratio_remaining
-
-    # Produces train and val splits.
+    # produces train and val splits
     x_train, x_val, y_train, y_val = train_test_split(
         x_remaining, y_remaining, random_state=42, test_size=ratio_val_adjusted)
+    # return splitted dataset
     return x_train, x_test, x_val, y_train, y_test, y_val
 
 
-ret = get_data_set("axial")
+ret = get_data_set("axial", augmentation=False)
 print(len(ret[0]), len(ret[1]), len(ret[2]), len(ret[3]), len(ret[4]), len(ret[5]))
 exit(0)
