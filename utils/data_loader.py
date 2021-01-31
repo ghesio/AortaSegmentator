@@ -3,19 +3,21 @@ import numpy as np
 import imageio
 from utils import data_augmentation as da
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
 
-
-def get_data_set(direction, samples_from_each_patient=20, ratio_val=0.1, ratio_test=0.1, augmentation=True):
+def get_data_set(direction, samples_from_each_patient=20, ratio_val=0.1, ratio_test=0.1, normalization = True,
+                 augmentation=True):
     """
     Load the dataset used to train the network
     :param direction: choose which direction (axial, coronal, sagittal)
     :param samples_from_each_patient: the number of samples to be drawn from all patients
     :param ratio_val: validation set ratio
     :param ratio_test: test set ration
+    :param normalization: normalize between 0 and 1 using a min max scaler
     :param augmentation: if True augment data using rotation, zoom and shifts
     :return: the splitted dataset or -1 if a wrong direction is chose
     """
-    if direction is not 'axial' or direction is not 'coronal' or direction is not 'sagittal':
+    if direction is not 'axial' and direction is not 'coronal' and direction is not 'sagittal':
         return -1
     # define max and min intervals for data augmentation
     shift_array = np.array(np.arange(-5, 1 + 5, 1))
@@ -70,6 +72,11 @@ def get_data_set(direction, samples_from_each_patient=20, ratio_val=0.1, ratio_t
                 for shift in shift_array:
                     scan_array.append(da.shift_image(current_slice, shift, axis=0))
                     roi_array.append(current_roi)
+    if normalization:
+        # a simple min-max scaling with predefined range (due to int_8 files)
+        for i in range(len(scan_array)):
+            scan_array[i] = scan_array[i] / 255
+            roi_array[i] = roi_array[i] / 255
     # split in train-test-validation
     x_remaining, x_test, y_remaining, y_test = train_test_split(scan_array, roi_array, random_state=42,
                                                                 test_size=ratio_test)
