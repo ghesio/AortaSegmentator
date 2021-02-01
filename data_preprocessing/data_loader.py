@@ -1,7 +1,7 @@
 import json
 import numpy as np
 import imageio
-from utils import data_augmentation as da
+from data_preprocessing import data_augmentation as da
 from sklearn.model_selection import train_test_split
 
 

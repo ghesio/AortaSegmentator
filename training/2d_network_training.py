@@ -4,7 +4,7 @@ os.environ['SM_FRAMEWORK'] = 'tf.keras'
 # https://github.com/qubvel/segmentation_models
 import segmentation_models as sm
 from keras.layers import Input, Conv2D
-from utils import data_loader as dl
+from data_preprocessing import data_loader as dl
 from keras.models import Model
 from keras.callbacks import ModelCheckpoint
 import tensorflow as tf
