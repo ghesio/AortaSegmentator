@@ -10,7 +10,7 @@ import logging
 from utils.misc import convert_img
 
 
-def convert_image_to_numpy_array(input_dir, equalization=True, padding=True):
+def convert_image_to_numpy_array(input_dir, equalization=True, padding=True, roi=False):
     # Instantiate a DICOM reader
     reader = sitk.ImageSeriesReader()
     dicom_names = reader.GetGDCMSeriesFileNames(input_dir)
@@ -42,14 +42,14 @@ def convert_image_to_numpy_array(input_dir, equalization=True, padding=True):
     orientation_filter.SetDesiredCoordinateOrientation(DesiredCoordinateOrientation='RAI')
     image = orientation_filter.Execute(image)
     # Equalization of the image, this may be slow
-    if equalization and 'roi' not in input_dir:
+    if equalization and not roi:
         logging.info('Equalization of the image')
         sitk.AdaptiveHistogramEqualization(image)
     # Convert to numpy array
     # !!CARE!! the indexing is image_array[z,y,x]
     image_array = sitk.GetArrayFromImage(image)
     # set B/W the image in a ROI
-    if 'roi' in input_dir:
+    if roi:
         background_color = image_array[0][0][0]
         image_array[image_array == background_color] = 0
         image_array[image_array != 0] = 255

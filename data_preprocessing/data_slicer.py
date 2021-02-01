@@ -40,7 +40,10 @@ def __convert_dicom(input_dir, root_dir, directions=(1, 1, 1), equalization=True
     :return: void
     """
     logging.info('Opening directory ' + input_dir)
-    image_array = convert_image_to_numpy_array(input_dir, equalization=equalization)
+    if 'roi' in input_dir:
+        image_array = convert_image_to_numpy_array(input_dir, equalization=equalization, roi=True)
+    else:
+        image_array = convert_image_to_numpy_array(input_dir, equalization=equalization)
     #
     # Save axial view
     #

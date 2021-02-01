@@ -18,6 +18,8 @@ direction = "axial"
 # network parameter
 batch_size = 16
 epochs = 1
+
+
 # load data
 (x_train, x_test, x_val, y_train, y_test, y_val) = dl.get_data_set(direction=direction, augmentation=False)
 # add channel info to train set
