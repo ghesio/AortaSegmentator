@@ -118,7 +118,7 @@ if __name__ == "__main__":
         if not dirs:
             dir_names += [os.path.abspath(root)]
     for _dir in dir_names:
-        if 'cut' in dir:
+        if 'cut' in _dir:
             continue
         logging.info('Processing ' + _dir)
         cut(_dir)
