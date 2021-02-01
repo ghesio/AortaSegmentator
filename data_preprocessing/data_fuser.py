@@ -1,11 +1,7 @@
 import os
-import sys
-import shutil
 import SimpleITK as sitk
 import numpy as np
 import imageio
-import logging
-import math
 
 
 def fuse_slices(root_path, out_file, out_spacing=(1.0, 1.0, 1.0)):
@@ -42,13 +38,13 @@ def fuse_slices(root_path, out_file, out_spacing=(1.0, 1.0, 1.0)):
 
 # this is just a test, EXTREMELY slow
 def check_slice_integrity(axial_array, coronal_array, sagittal_array):
-    lenght_i = np.shape(axial_array)[0]
-    lenght_j = np.shape(coronal_array)[1]
-    lenght_k = np.shape(sagittal_array)[2]
-    for i in range(lenght_i): #Z
+    length_i = np.shape(axial_array)[0]
+    length_j = np.shape(coronal_array)[1]
+    length = np.shape(sagittal_array)[2]
+    for i in range(length_i):  # Z
         print('i: {}'.format(i))
-        for j in range(lenght_j): #Y
-            for k in range(lenght_k): #X
+        for j in range(length_j):  # Y
+            for k in range(length):  # X
                 if axial_array[i][j][k] != coronal_array[j][i][k] and axial_array[i][j][k] != sagittal_array[i][k][j]:
                     exit(-1)
     exit(0)

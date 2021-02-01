@@ -1,7 +1,7 @@
 import json
 import numpy as np
 import imageio
-from data_preprocessing import data_augmentation as da
+from utils import image_augmentation as da
 from sklearn.model_selection import train_test_split
 
 
@@ -52,7 +52,7 @@ def get_data_set(direction, samples_from_each_patient=20, ratio_val=0.1, ratio_t
         for i in range(len(scan_slices)):
             current_slice = scan_slices[i]
             current_roi = roi_slices[i]
-            # add to data set withut augmentation
+            # add to data set without augmentation
             scan_array.append(current_slice)
             roi_array.append(current_roi)
             if augmentation:
@@ -90,6 +90,7 @@ def get_data_set(direction, samples_from_each_patient=20, ratio_val=0.1, ratio_t
     return np.array(x_train), np.array(x_test), np.array(x_val), np.array(y_train), np.array(y_test), np.array(y_val)
 
 
-#ret = get_data_set("axial", augmentation=False)
-#print(ret[0].shape, ret[1].shape, ret[2].shape, ret[3].shape, ret[4].shape, ret[5].shape)
-#exit(0)
+if __name__ == "__main__":
+    ret = get_data_set("axial", augmentation=False)
+    print(ret[0].shape, ret[1].shape, ret[2].shape, ret[3].shape, ret[4].shape, ret[5].shape)
+    exit(0)

@@ -1,4 +1,4 @@
-#https://stackoverflow.com/questions/37119071/scipy-rotate-and-zoom-an-image-without-changing-its-dimensions
+# https://stackoverflow.com/questions/37119071/scipy-rotate-and-zoom-an-image-without-changing-its-dimensions
 
 import numpy as np
 from scipy.ndimage import rotate
@@ -24,7 +24,7 @@ def zoom_image(img, zoom_factor):
     :param zoom_factor: the zoom factor
     :return: the zoomed image
     """
-    height, width = img.shape[:2] # It's also the final desired shape
+    height, width = img.shape[:2]  # it's also the final desired shape
     new_height, new_width = int(height * zoom_factor), int(width * zoom_factor)
 
     # Crop only the part that will remain in the result (more efficient)
@@ -39,9 +39,9 @@ def zoom_image(img, zoom_factor):
 
     # Handle padding when downscaling
     resize_height, resize_width = min(new_height, height), min(new_width, width)
-    pad_height1, pad_width1 = (height - resize_height) // 2, (width - resize_width) //2
+    pad_height1, pad_width1 = (height - resize_height) // 2, (width - resize_width) // 2
     pad_height2, pad_width2 = (height - resize_height) - pad_height1, (width - resize_width) - pad_width1
-    pad_spec = [(pad_height1, pad_height2), (pad_width1, pad_width2)] + [(0,0)] * (img.ndim - 2)
+    pad_spec = [(pad_height1, pad_height2), (pad_width1, pad_width2)] + [(0, 0)] * (img.ndim - 2)
 
     result = cv2.resize(cropped_img, (resize_width, resize_height))
     result = np.pad(result, pad_spec, mode='constant')
@@ -90,5 +90,6 @@ def test():
     plt.show()
 
 
-#test()
-#exit(0)
+if __name__ == "__main__":
+    test()
+    exit(0)
