@@ -18,10 +18,12 @@ direction = "axial"
 # network parameter
 batch_size = 16
 epochs = 1
-
+# data parameter
+samples_from_each_patient = 20
 
 # load data
-(x_train, x_test, x_val, y_train, y_test, y_val) = dl.get_data_set(direction=direction, augmentation=False)
+(x_train, x_test, x_val, y_train, y_test, y_val) = dl.get_data_set(direction=direction, augmentation=False,
+                                                                   samples_from_each_patient=samples_from_each_patient)
 # add channel info to train set
 x_train = tf.expand_dims(x_train, axis=-1)
 # load model
@@ -32,16 +34,19 @@ inp = Input(shape=(None, None, N))
 l1 = Conv2D(3, (1, 1))(inp) # map N channels data to 3 channels
 out = base_model(l1)
 model = Model(inp, out, name=base_model.name)
+# print model summary
+model.summary()
 # compile the model
 model.compile('Adam', loss=sm.losses.bce_jaccard_loss, metrics=[sm.metrics.iou_score])
-# define callbacks for saving checkpoints
+# define callbacks
+# a) save checkpoints
 save_callback = tf.keras.callbacks.ModelCheckpoint(
-    filepath='../checkpoints/'+direction+'_'+backbone+'-{epoch:02d}-{val_loss:.2f}.hdf5',
+    filepath='../checkpoints/'+direction+'_'+str(samples_from_each_patient)+'_'+backbone+'-{epoch:02d}-{val_loss:.2f}.hdf5',
     save_weights_only=True,
     monitor='val_loss',
     mode='min',
     save_best_only=True)
-# early stopping criteria
+# b) early stopping criteria
 early_stopping_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', patience=5)
 # fit the model
 print("Training start @ ", datetime.now().strftime("%H:%M:%S"))
@@ -51,7 +56,7 @@ history = model.fit(
    batch_size=batch_size,
    epochs=epochs,
    validation_data=(x_val, y_val),
-   callbacks=[save_callback, early_stopping_callback]
+   callbacks=[save_callback, early_stopping_callback, tensorboard_callback]
 )
 print("Training end @ ", datetime.now().strftime("%H:%M:%S"))
 print("\r\nTraining results")
