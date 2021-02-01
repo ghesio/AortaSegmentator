@@ -137,3 +137,5 @@ dmypy.json
 /data/info.json
 /checkpoints/**
 !/checkpoints/.gitkeep
+/checkpoints/logs/**
+!/checkpoints/logs/**/.gitkeep
