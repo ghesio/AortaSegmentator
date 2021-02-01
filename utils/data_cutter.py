@@ -36,8 +36,6 @@ def cut(directory):
                     out_dir = root.replace('roi', 'roi_cut')
                 else:
                     out_dir = root.replace('scan', 'scan_cut')
-                if 'sagittal' in root:
-                    pass
                 out_image_path = out_dir + '\\' + files[i]
                 if not os.path.exists(out_dir):
                     os.makedirs(out_dir)
@@ -122,11 +120,8 @@ logging.info("Buonding box location (padded) (x,y,z): (" + str(int(center_x - ne
                     new_side_x/2)) + ") x (" + str(int(center_y - new_side_y/2)) + "-" + str(int(center_y +
                     new_side_y/2)) + ") x (" + str(int(center_z - new_side_z/2)) + "-" + str(int(center_z +
                     new_side_z/2)) + ")")
-
-
 if dry_run:
     exit(1)
-
 # iterate through directories
 dir_names = []
 for root, dirs, files in os.walk('../data/out'):

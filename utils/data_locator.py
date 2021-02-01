@@ -1,5 +1,4 @@
 """
-!WIP!
 Generates a JSON file containing info from sliced DICOMs
 
 JSON format:
@@ -13,7 +12,6 @@ JSON format:
 			"max_pixel_0": max non background pixel along rows of view,
 			"max_pixel_1": min non background pixel along rows of view
 		},
-		"axial_downsample": { as above },
 		"coronal": { as above },
 		"sagittal": { as above },
 		"scan_dir": "Root directory containing the scan slices"
@@ -111,8 +109,7 @@ for dir in dir_names:
         patient_map[patient_id]['roi_dir'] = remove_everything_after_last(dir)
         logging.info('Opening directory ' + dir)
         info = read_image_information_in_directory(dir)
-        # TODO extends for other downsampled directories as needed
-        if 'axial' in dir and 'axial_downsample_' not in dir:
+        if 'axial' in dir:
             # Y-X plane
             patient_map[patient_id]['axial'] = {}
             patient_map[patient_id]['axial']['min_slice'] = info[0][0]
@@ -121,15 +118,6 @@ for dir in dir_names:
             patient_map[patient_id]['axial']['min_x'] = info[1][1]
             patient_map[patient_id]['axial']['max_y'] = info[2][0]
             patient_map[patient_id]['axial']['max_x'] = info[2][1]
-        elif 'axial_downsample_' in dir:
-            # Y-X plane
-            patient_map[patient_id]['axial_downsample'] = {}
-            patient_map[patient_id]['axial_downsample']['min_slice'] = info[0][0]
-            patient_map[patient_id]['axial_downsample']['max_slice'] = info[0][1]
-            patient_map[patient_id]['axial_downsample']['min_y'] = info[1][0]
-            patient_map[patient_id]['axial_downsample']['min_x'] = info[1][1]
-            patient_map[patient_id]['axial_downsample']['max_y'] = info[2][0]
-            patient_map[patient_id]['axial_downsample']['max_x'] = info[2][1]
         elif 'coronal' in dir:
             # Z-X plane
             patient_map[patient_id]['coronal'] = {}

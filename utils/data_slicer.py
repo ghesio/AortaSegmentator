@@ -72,14 +72,11 @@ def resample_image(itk_image, out_spacing=(1.0, 1.0, 1.0)):
     return resample.Execute(itk_image)
 
 
-def convert_dicom(input_dir, output_dir, downsample_factor=2, downsample_direction=(0, 0, 0),
-                  directions=(1, 1, 1), equalization=True):
+def convert_dicom(input_dir, output_dir, directions=(1, 1, 1), equalization=True):
     """
     Write all dicom series slices into the output directory
     :param input_dir: the input dir containing DICOM series
     :param output_dir: the output dir which will contain the output slices
-    :param downsample_factor: if specified also downsample the image
-    :param downsample_direction: if specified the factor also downsample in the direction
     :param directions: which direction to get
     :param equalization: set to True to equalize the image
     :return: void
@@ -127,20 +124,10 @@ def convert_dicom(input_dir, output_dir, downsample_factor=2, downsample_directi
         background_color = image_array[0][0][0]
         image_array[image_array == background_color] = 0
         image_array[image_array != 0] = 255
-    # Calculate downsampled image
-    image_array_downsampled = image_array[::downsample_factor, ::downsample_factor, ::downsample_factor]
-
     #
     # Save axial view
     #
     if directions[0] == 1:
-        downsample = True if downsample_factor and downsample_direction[0] == 1 else False
-        if downsample:
-            save_directory_downsample = output_dir + '\\axial_downsample_' + str(downsample_factor) + '\\'
-            if os.path.exists(save_directory_downsample):
-                logging.warning('Deleting old directory ' + save_directory_downsample)
-                shutil.rmtree(save_directory_downsample)
-            os.makedirs(save_directory_downsample)
         save_directory = output_dir + '\\axial\\'
         if os.path.exists(save_directory):
             logging.warning('Deleting old directory ' + save_directory)
@@ -165,30 +152,11 @@ def convert_dicom(input_dir, output_dir, downsample_factor=2, downsample_directi
             logging.debug('Saving image to ' + output_file_name)
             # TODO test more the image orientation filter to avoid rotating the images
             imageio.imwrite(output_file_name, convert_img(np.flipud(image_array[i, :, :]), min, max), format='png')
-        if downsample:
-            logging.info('Start saving axial (downlsampled) view in ' + save_directory_downsample)
-            last_progress = None
-            for i in range(image_array_downsampled.shape[0]):
-                if math.floor(i * 100 / image_array_downsampled.shape[0]) % 10 == 0 and math.floor(
-                        i * 100 / image_array_downsampled.shape[0]) != last_progress:
-                    logging.info(str(math.floor(i * 100 / image_array_downsampled.shape[0])) + ' %')
-                    last_progress = math.floor(i * 100 / image_array_downsampled.shape[0])
-                output_file_name = save_directory_downsample + 'axial_' + str(i).zfill(4) + '.png'
-                logging.debug('Saving image to ' + output_file_name)
-                imageio.imwrite(output_file_name, convert_img(np.flipud(image_array_downsampled[i, :, :]), min, max),
-                                format='png')
 
     #
     # Save coronal view
     #
     if directions[1] == 1:
-        downsample = True if downsample_factor and downsample_direction[1] == 1 else False
-        if downsample:
-            save_directory_downsample = output_dir + '\\coronal_downsample_' + str(downsample_factor) + '\\'
-            if os.path.exists(save_directory_downsample):
-                logging.warning('Deleting old directory ' + save_directory_downsample)
-                shutil.rmtree(save_directory_downsample)
-            os.makedirs(save_directory_downsample)
         save_directory = output_dir + '\\coronal\\'
         if os.path.exists(save_directory):
             logging.warning('Deleting old directory ' + save_directory)
@@ -213,29 +181,10 @@ def convert_dicom(input_dir, output_dir, downsample_factor=2, downsample_directi
             output_file_name = save_directory + 'coronal_' + str(i).zfill(4) + '.png'
             logging.debug('Saving image to ' + output_file_name)
             imageio.imwrite(output_file_name, convert_img(image_array[:, i, :], min, max), format='png')
-        if downsample:
-            logging.info('Start saving coronal (downlsampled) view in ' + save_directory_downsample)
-            last_progress = None
-            for i in range(image_array_downsampled.shape[1]):
-                if math.floor(i * 100 / image_array_downsampled.shape[1]) % 10 == 0 and math.floor(
-                        i * 100 / image_array_downsampled.shape[1]) != last_progress:
-                    logging.info(str(math.floor(i * 100 / image_array_downsampled.shape[1])) + ' %')
-                    last_progress = math.floor(i * 100 / image_array_downsampled.shape[1])
-                output_file_name = save_directory_downsample + 'coronal_' + str(i).zfill(4) + '.png'
-                logging.debug('Saving image to ' + output_file_name)
-                imageio.imwrite(output_file_name, convert_img(image_array_downsampled[:, i, :], min, max),
-                                format='png')
     #
     # Save sagittal view
     #
     if directions[2] == 1:
-        downsample = True if downsample_factor and downsample_direction[2] == 1 else False
-        if downsample:
-            save_directory_downsample = output_dir + '\\sagittal_downsample_' + str(downsample_factor) + '\\'
-            if os.path.exists(save_directory_downsample):
-                logging.warning('Deleting old directory ' + save_directory_downsample)
-                shutil.rmtree(save_directory_downsample)
-            os.makedirs(save_directory_downsample)
         save_directory = output_dir + '\\sagittal\\'
         if os.path.exists(save_directory):
             logging.warning('Deleting old directory ' + save_directory)
@@ -261,18 +210,6 @@ def convert_dicom(input_dir, output_dir, downsample_factor=2, downsample_directi
             logging.debug('Saving image to ' + output_file_name)
             # FIXME test more the image orientation filter to avoid rotating the images
             imageio.imwrite(output_file_name, convert_img(np.fliplr(image_array[:, :, i]), min, max), format='png')
-        if downsample:
-            logging.info('Start saving sagittal (downlsampled) view in ' + save_directory_downsample)
-            last_progress = None
-            for i in range(image_array_downsampled.shape[2]):
-                if math.floor(i * 100 / image_array_downsampled.shape[2]) % 10 == 0 and math.floor(
-                        i * 100 / image_array_downsampled.shape[2]) != last_progress:
-                    logging.info(str(math.floor(i * 100 / image_array_downsampled.shape[2])) + ' %')
-                    last_progress = math.floor(i * 100 / image_array_downsampled.shape[2])
-                output_file_name = save_directory_downsample + 'sagittal_' + str(i).zfill(4) + '.png'
-                logging.debug('Saving image to ' + output_file_name)
-                imageio.imwrite(output_file_name, convert_img(np.fliplr(image_array_downsampled[:, :, i]), min, max),
-                                format='png')
 
 
 def convert_img(img, source_type_min=None, source_type_max=None, target_type_min=0, target_type_max=255,
@@ -283,7 +220,7 @@ def convert_img(img, source_type_min=None, source_type_max=None, target_type_min
     :param source_type_min: the min value for rescaling (source)
     :param source_type_max: the max value for rescaling (source)
     :param target_type_min: the min value for rescaling (destination)
-    :param target_type_max: the max value for rescaling (source)
+    :param target_type_max: the max value for rescaling (destination)
     :param target_type: target data type
     :return: the rescaled image
     """
