@@ -81,6 +81,8 @@ if __name__ == "__main__":
 		if patient_id not in patient_map:
 			patient_map[patient_id] = {}
 		# get information about informative images in 'roi' dir
+		if 'cut' in _dir:
+			continue
 		if 'roi' in _dir:
 			patient_map[patient_id]['roi_dir'] = remove_everything_after_last(_dir)
 			logging.info('Opening directory ' + _dir)
@@ -108,8 +110,8 @@ if __name__ == "__main__":
 				patient_map[patient_id]['sagittal']['min_slice'] = info[0][0]
 				patient_map[patient_id]['sagittal']['max_slice'] = info[0][1]
 				patient_map[patient_id]['sagittal']['min_z'] = info[1][0]
-				patient_map[patient_id]['sagittal']['min_x'] = info[1][1]
-				patient_map[patient_id]['sagittal']['max_y'] = info[2][0]
+				patient_map[patient_id]['sagittal']['min_y'] = info[1][1]
+				patient_map[patient_id]['sagittal']['max_z'] = info[2][0]
 				patient_map[patient_id]['sagittal']['max_y'] = info[2][1]
 		else:
 			patient_map[patient_id]['scan_dir'] = remove_everything_after_last(_dir)

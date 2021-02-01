@@ -39,14 +39,16 @@ def get_data_set(direction, samples_from_each_patient=20, ratio_val=0.1, ratio_t
         max_slice_index = patient_map[patient][direction]['max_slice']
         # draw random samples from the slices to load them
         random_indexes = np.random.randint(min_slice_index, max_slice_index - 1, samples_from_each_patient)
+        # load the slices from disk
         scan_slices = []
         roi_slices = []
-        # load the slices from disk
         for index in random_indexes:
             scan_uri = scan_cut_dir + '\\' + direction + '_' + str.zfill(str(index), 4) + '.png'
             roi_uri = roi_cut_dir + '\\' + direction + '_' + str.zfill(str(index), 4) + '.png'
-            scan_slices.append(np.array(imageio.imread(uri=scan_uri), dtype='uint8'))
-            roi_slices.append(np.array(imageio.imread(uri=roi_uri), dtype='uint8'))
+            scan_load = np.array(imageio.imread(uri=scan_uri), dtype='uint8')
+            scan_slices.append(scan_load)
+            roi_load = np.array(imageio.imread(uri=roi_uri), dtype='uint8')
+            roi_slices.append(roi_load)
         assert len(roi_slices) == samples_from_each_patient == len(scan_slices)
         # iterate through data to be added to the dataset arrays
         for i in range(len(scan_slices)):
@@ -87,10 +89,11 @@ def get_data_set(direction, samples_from_each_patient=20, ratio_val=0.1, ratio_t
     x_train, x_val, y_train, y_val = train_test_split(
         x_remaining, y_remaining, random_state=42, test_size=ratio_val_adjusted)
     # return splitted dataset
-    return np.array(x_train), np.array(x_test), np.array(x_val), np.array(y_train), np.array(y_test), np.array(y_val)
+    return np.array(x_train, dtype='float32'), np.array(x_test, dtype='float32'), np.array(x_val, dtype='float32'), \
+           np.array(y_train, dtype='float32'), np.array(y_test, dtype='float32'), np.array(y_val, dtype='float32')
 
 
 if __name__ == "__main__":
-    ret = get_data_set("axial", augmentation=False)
+    ret = get_data_set("axial", augmentation=False, samples_from_each_patient=20)
     print(ret[0].shape, ret[1].shape, ret[2].shape, ret[3].shape, ret[4].shape, ret[5].shape)
     exit(0)
