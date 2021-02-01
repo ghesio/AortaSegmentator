@@ -30,11 +30,11 @@ def __read_all_directories():
     return __file_map
 
 
-def __convert_dicom(input_dir, root_dir, directions=(1, 1, 1), equalization=True):
+def __convert_dicom(input_dir, out_root_dir, directions=(1, 1, 1), equalization=True):
     """
     Write all dicom series slices into the output directory
     :param input_dir: the input dir containing DICOM series
-    :param root_dir: the output dir which will contain the output slices in sub folders
+    :param out_root_dir: the output dir which will contain the output slices in sub folders
     :param directions: which direction to get
     :param equalization: set to True to equalize the image
     :return: void
@@ -48,17 +48,17 @@ def __convert_dicom(input_dir, root_dir, directions=(1, 1, 1), equalization=True
     # Save axial view
     #
     if directions[0] == 1:
-        save_slices('axial', image_array, root_dir)
+        save_slices('axial', image_array, out_root_dir)
     #
     # Save coronal view
     #
     if directions[1] == 1:
-        save_slices('coronal', image_array, root_dir)
+        save_slices('coronal', image_array, out_root_dir)
     #
     # Save sagittal view
     #
     if directions[2] == 1:
-        save_slices('sagittal', image_array, root_dir)
+        save_slices('sagittal', image_array, out_root_dir)
 
 
 if __name__ == "__main__":
@@ -67,5 +67,6 @@ if __name__ == "__main__":
         logging.error("Nothing to process - aborting.")
         exit(-1)
     for key, value in file_map.items():
-        __convert_dicom(key, value)
+        # equalization set to False for faster testing
+        __convert_dicom(key, value, equalization=False)
     exit(0)

@@ -157,7 +157,7 @@ def save_slices(direction, image_array, root_dir):
         if direction is 'axial':
             imageio.imwrite(output_file_name, np.flipud(image_array[i, :, :]), format='png')
         elif direction is 'coronal':
-            imageio.imwrite(output_file_name, image_array[i, :, :], format='png')
+            imageio.imwrite(output_file_name, image_array[:, i, :], format='png')
         else:
             imageio.imwrite(output_file_name, np.fliplr(image_array[:, :, i]), format='png')
 

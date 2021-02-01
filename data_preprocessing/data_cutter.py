@@ -7,14 +7,6 @@ import imageio
 from utils import custom_logger
 import logging
 
-# Initialize globals
-min_x = 99999
-max_x = -99999
-min_y = 99999
-max_y = -99999
-min_z = 99999
-max_z = -99999
-
 
 def cut(directory):
     for __root, __dirs, __files in os.walk(directory):
@@ -50,6 +42,13 @@ if __name__ == "__main__":
     # read JSON containing information
     with open('../data/info.json') as f:
         patient_map = json.load(f)
+    # initialize minima and maxima variables
+    min_x = 99999
+    max_x = -99999
+    min_y = 99999
+    max_y = -99999
+    min_z = 99999
+    max_z = -99999
     # iterate through every patient and get bounding box vertexes
     for patient in patient_map:
         if patient_map[patient]['axial']['min_y'] < min_y:
