@@ -9,35 +9,25 @@ from keras.models import Model
 from keras.callbacks import ModelCheckpoint
 import tensorflow as tf
 from datetime import datetime
+from utils.network_utils import get_model
 
 
 # define backbone for the net
 backbone = 'resnet34'
 # define which network to train
-direction = "axial"
+direction = "sagittal"
 # network parameter
 batch_size = 16
 epochs = 1
 # data parameter
 samples_from_each_patient = 20
-
 # load data
 (x_train, x_test, x_val, y_train, y_test, y_val) = dl.get_data_set(direction=direction, augmentation=False,
                                                                    samples_from_each_patient=samples_from_each_patient)
 # add channel info to train set
 x_train = tf.expand_dims(x_train, axis=-1)
-# load model
-base_model = sm.Unet(backbone, encoder_weights='imagenet')
-# define number of channels
-N = x_train.shape[-1]
-inp = Input(shape=(None, None, N))
-l1 = Conv2D(3, (1, 1))(inp) # map N channels data to 3 channels
-out = base_model(l1)
-model = Model(inp, out, name=base_model.name)
-# print model summary
-model.summary()
-# compile the model
-model.compile('Adam', loss=sm.losses.bce_jaccard_loss, metrics=[sm.metrics.iou_score])
+# get model
+model = get_model(backbone=backbone)
 # define callbacks
 # a) save checkpoints
 save_callback = tf.keras.callbacks.ModelCheckpoint(
@@ -47,22 +37,22 @@ save_callback = tf.keras.callbacks.ModelCheckpoint(
     mode='min',
     save_best_only=True)
 # b) early stopping criteria
-early_stopping_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', patience=5)
+early_stopping_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', patience=3)
 # fit the model
-print("Training start @ ", datetime.now().strftime("%H:%M:%S"))
+print('Training start @', datetime.now().strftime("%H:%M:%S"), '-', direction)
 history = model.fit(
    x=x_train,
    y=y_train,
    batch_size=batch_size,
    epochs=epochs,
    validation_data=(x_val, y_val),
-   callbacks=[save_callback, early_stopping_callback, tensorboard_callback]
+   callbacks=[save_callback, early_stopping_callback]
 )
 print("Training end @ ", datetime.now().strftime("%H:%M:%S"))
 print("\r\nTraining results")
 for key in history.history.keys():
-    print(key+':', history.history[key])
+    print('\t' + key+':', history.history[key])
 print("\r\nTest evaluation")
 results = model.evaluate(x_test, y_test, batch_size=16)
-print('Loss:', results[0], 'Accuracy:', results[1])
+print('\tLoss:', results[0], 'Accuracy:', results[1])
 exit(0)
