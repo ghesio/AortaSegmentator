@@ -185,6 +185,7 @@ def get_train_validation(direction, samples_from_each_patient=20, ratio_val=0.1,
     return np.array(x_train, dtype='float32'), np.array(x_val, dtype='float32'), \
            np.array(y_train, dtype='float32'), np.array(y_val, dtype='float32')
 
+
 def get_test(direction, samples_from_each_patient=20, test_size=10, normalization=True, augmentation=True):
     """
     Load the dataset used to train the network

@@ -4,7 +4,7 @@ os.environ['SM_FRAMEWORK'] = 'tf.keras'
 # https://github.com/qubvel/segmentation_models
 import segmentation_models as sm
 from keras.layers import Input, Conv2D
-from data_preprocessing import data_loader as dl
+import data_preprocessing.data_loader as dl
 from keras.models import Model
 from keras.callbacks import ModelCheckpoint
 import tensorflow as tf
@@ -21,9 +21,11 @@ batch_size = 16
 epochs = 1
 # data parameter
 samples_from_each_patient = 20
+test_size = 1
 # load data
-(x_train, x_test, x_val, y_train, y_test, y_val) = dl.get_data_set(direction=direction, augmentation=False,
-                                                                   samples_from_each_patient=samples_from_each_patient)
+(x_train, x_val, y_train, y_val) = dl.get_train_validation(direction=direction, augmentation=False,
+                                                            samples_from_each_patient=samples_from_each_patient,
+                                                            test_size= test_size)
 # add channel info to train set
 x_train = tf.expand_dims(x_train, axis=-1)
 # get model
@@ -49,6 +51,8 @@ history = model.fit(
    callbacks=[save_callback, early_stopping_callback]
 )
 print("Training end @ ", datetime.now().strftime("%H:%M:%S"))
+(x_test, y_test) = dl.get_test(direction=direction, samples_from_each_patient=samples_from_each_patient,
+                               test_size=test_size, augmentation=False)
 print("\r\nTraining results")
 for key in history.history.keys():
     print('\t' + key+':', history.history[key])
