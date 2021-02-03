@@ -10,7 +10,7 @@ from keras.models import Model
 
 def get_model(number_of_channel=1, backbone='resnet34'):
     # load model
-    base_model = sm.Unet(backbone, encoder_weights='imagenet')
+    base_model = sm.Unet(backbone, classes=2, encoder_weights='imagenet')
     inp = Input(shape=(None, None, number_of_channel))
     l1 = Conv2D(3, (1, 1))(inp)  # map N channels data to 3 channels
     out = base_model(l1)

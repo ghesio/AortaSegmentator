@@ -45,3 +45,18 @@ def convert_img(img, source_type_min=None, source_type_max=None, target_type_min
     b = target_type_max - a * input_max
     new_img = (a * img + b).astype(target_type)
     return new_img
+
+
+def calculate_iou_score(prediction_a, prediction_b):
+    # calculate intersection
+    intersection = ((prediction_a == 1) & (prediction_b == 1)).sum()
+    # calculate union
+    union = (a == 1).sum() + (b == 1).sum() - intersection
+    return intersection/union
+
+
+if __name__ == "__main__":
+    a = np.random.randint(2, size=(10, 10, 10))
+    b = a
+    assert calculate_iou_score(a, b) == 1.0
+    exit(0)
