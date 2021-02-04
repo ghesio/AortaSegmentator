@@ -4,7 +4,8 @@ import numpy as np
 import imageio
 
 
-def fuse_slices(root_path, out_file, out_spacing=(1.0, 1.0, 1.0)):
+# an assertion test used to rebuilt scan from slices
+def fuse_slices_assertion(root_path, out_file, out_spacing=(1.0, 1.0, 1.0)):
     # the root path must contains axial, coronal, sagittal directories
     sagittal_files = [root_path + 'sagittal\\' + x for x in os.listdir(root_path + 'sagittal')]
     coronal_files = [root_path + 'coronal\\' + x for x in os.listdir(root_path + 'coronal')]

@@ -277,6 +277,33 @@ def get_test(direction, samples_from_each_patient=20, test_size=10, normalizatio
     return np.array(scan_array, dtype='float32'), np.array(roi_array, dtype='float32')
 
 
+def get_test_set_directories(test_size = 10):
+    # load the json containing information
+    with open('../data/info.json') as f:
+        patient_map = json.load(f)
+    # sort the keys
+    sorted_patients = sorted(patient_map)
+    if len(sorted_patients) < test_size:
+        exit(-1)
+    sorted_map = {}
+    i = 0
+    directories = []
+    for patient in sorted_patients:
+        sorted_map[patient] = patient_map[patient]
+        if len(sorted_patients) - test_size <= i:
+            sorted_map[patient]["test"] = True
+        else:
+            sorted_map[patient]["test"] = False
+        i = i + 1
+    # iterate through every patient in sorted map
+    for patient in sorted_map:
+        if sorted_map[patient]["test"] is False:
+            continue
+        else:
+            directories.append((sorted_map[patient]["scan_dir"], sorted_map[patient]["roi_dir"]))
+    return directories
+
+
 if __name__ == "__main__":
     whole = get_data_set("axial", augmentation=True, samples_from_each_patient=20)
     print(whole[0].shape, whole[1].shape, whole[2].shape, whole[3].shape, whole[4].shape, whole[5].shape)

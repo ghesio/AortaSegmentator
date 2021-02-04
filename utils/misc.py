@@ -47,12 +47,15 @@ def convert_img(img, source_type_min=None, source_type_max=None, target_type_min
     return new_img
 
 
-def calculate_iou_score(prediction_a, prediction_b):
+def calculate_iou_score(prediction, ground_truth):
     # calculate intersection
-    intersection = ((prediction_a == 1) & (prediction_b == 1)).sum()
+    intersection = ((prediction == 1) & (ground_truth == 1)).sum()
     # calculate union
-    union = (a == 1).sum() + (b == 1).sum() - intersection
-    return intersection/union
+    union = (prediction == 1).sum() + (ground_truth == 1).sum() - intersection
+    if union == 0:
+        return 0.0
+    else:
+        return intersection/union
 
 
 if __name__ == "__main__":

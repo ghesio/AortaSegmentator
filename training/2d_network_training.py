@@ -9,11 +9,8 @@ from keras.models import Model
 from keras.callbacks import ModelCheckpoint
 import tensorflow as tf
 from datetime import datetime
-from utils.network_utils import get_model
+from utils.network_utils import get_model, backbone
 
-
-# define backbone for the net
-backbone = 'resnet34'
 # define which network to train
 direction = "sagittal"
 # network parameter
@@ -25,16 +22,16 @@ test_size = 1
 # load data
 (x_train, x_val, y_train, y_val) = dl.get_train_validation(direction=direction, augmentation=False,
                                                             samples_from_each_patient=samples_from_each_patient,
-                                                            test_size= test_size)
+                                                            test_size=test_size)
 # add channel info to train set
 x_train = tf.expand_dims(x_train, axis=-1)
 # get model
-model = get_model(backbone=backbone)
+model = get_model(x_train.shape[-1])
 # define callbacks
 # a) save checkpoints
 save_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath='../checkpoints/'+direction+'_'+str(samples_from_each_patient)+'_'+backbone+'-{epoch:02d}-{val_loss:.2f}.hdf5',
-    save_weights_only=True,
+    save_weights_only=False,
     monitor='val_loss',
     mode='min',
     save_best_only=True)
