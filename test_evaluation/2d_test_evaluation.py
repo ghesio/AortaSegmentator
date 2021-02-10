@@ -1,7 +1,7 @@
 import json
 from data_preprocessing.data_loader import get_test_set_directories
 from utils.dicom_utils import convert_image_to_numpy_array
-from utils.network_utils import get_model, get_pretrained_models
+from utils.network_utils import get_pretrained_models, get_best_checkpoints
 import keras
 import numpy as np
 import tensorflow as tf
@@ -9,20 +9,28 @@ import tensorflow as tf
 from utils import custom_logger
 from utils.misc import calculate_iou_score
 import logging
+from datetime import datetime
+
 
 # define the test size
 test_size = 1
 # get directories to load
 directories = get_test_set_directories(test_size=test_size)
 equalization = False
+# load files for pickle name [0] = axial, [1]=coronal, [2]=sagittal, [3] = combined
+best_files = get_best_checkpoints()
+timestamp = datetime.today().strftime('%Y%m%d_%H%M%S')
+files = [x[0:-11] + timestamp for x in best_files]
+files.append(files[0].replace('axial', 'combined'))
+files.append(files[0].replace('axial', 'roi'))
 # load models [0] = axial, [1]=coronal, [2]=sagittal
 models = get_pretrained_models()
-# define a threshold for which the prediction is good (or None)
-threshold = 0.7
-iou_array_axial = []
-iou_array_coronal = []
-iou_array_sagittal = []
-iou_array_combined = []
+# vectors to store the predictions on file system
+array_axial = []
+array_coronal = []
+array_sagittal = []
+array_combined = []
+roi = []
 # iterate all directories
 for i in range(len(directories)):
     logging.info('Loading directories ' + str(directories[i]))
@@ -30,7 +38,7 @@ for i in range(len(directories)):
     roi_dir = str.replace(directories[i][1], 'out', 'in')
     # load scan image
     scan_array = convert_image_to_numpy_array(input_dir=scan_dir, equalization=equalization, padding=True, roi=False)
-    roi_array = convert_image_to_numpy_array(input_dir=roi_dir, equalization=equalization, padding=True, roi=True)
+    roi.append(convert_image_to_numpy_array(input_dir=roi_dir, equalization=equalization, padding=True, roi=True))
     axial_shape = scan_array[0, :, :].shape
     coronal_shape = scan_array[:, 0, :].shape
     sagittal_shape = scan_array[:, :, 0].shape
@@ -56,30 +64,16 @@ for i in range(len(directories)):
         prediction_sagittal[:, :, j] = models[2].predict(current).reshape(sagittal_shape)
     # combine the views and calculate IoU
     prediction_combined = (prediction_axial + prediction_coronal + prediction_coronal) / 3.0
-    if threshold:
-        prediction_axial[prediction_axial >= threshold] = 1
-        prediction_coronal[prediction_coronal >= threshold] = 1
-        prediction_sagittal[prediction_sagittal >= threshold] = 1
-        prediction_combined[prediction_combined >= threshold] = 1
-    axial_iou_score = calculate_iou_score(prediction=prediction_axial, ground_truth=roi_array)
-    iou_array_axial.append(axial_iou_score)
-    coronal_iou_score = calculate_iou_score(prediction=prediction_coronal, ground_truth=roi_array)
-    iou_array_coronal.append(coronal_iou_score)
-    sagittal_iou_score = calculate_iou_score(prediction=prediction_sagittal, ground_truth=roi_array)
-    iou_array_sagittal.append(sagittal_iou_score)
-    combined_iou_score = calculate_iou_score(prediction=prediction_combined, ground_truth=roi_array)
-    iou_array_combined.append(combined_iou_score)
-    logging.info('IoU scores (axial, coronal, sagittal, combined): ' + str(axial_iou_score) + ' '
-                 + str(coronal_iou_score) + ' ' + str(sagittal_iou_score) + ' ' + str(combined_iou_score))
+    array_axial.append(prediction_axial)
+    array_coronal.append(prediction_coronal)
+    array_sagittal.append(prediction_sagittal)
+    array_combined.append(prediction_combined)
+logging.info('Saving results')
+np.save(files[0], array_axial)
+np.save(files[1], array_coronal)
+np.save(files[2], array_sagittal)
+np.save(files[3], array_combined)
+np.save(files[4], roi)
 
-logging.info('IoU stats (mean, std deviation, variance')
-logging.info('Axial' + ' ' + str(np.mean(iou_array_axial)) + ' ' + str(np.std(iou_array_axial)) + ' '
-             + str(np.var(iou_array_axial)))
-logging.info('Coronal' + ' ' + str(np.mean(iou_array_coronal)) + ' ' + str(np.std(iou_array_coronal)) + ' '
-             + str(np.var(iou_array_coronal)))
-logging.info('Sagittal' + ' ' + str(np.mean(iou_array_sagittal)) + ' ' + str(np.std(iou_array_sagittal)) + ' '
-             + str(np.var(iou_array_sagittal)))
-logging.info('Combined' + ' ' + str(np.mean(iou_array_combined)) + ' ' + str(np.std(iou_array_combined)) + ' '
-             + str(np.var(iou_array_combined)))
 exit(0)
 

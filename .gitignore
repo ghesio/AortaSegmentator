@@ -139,3 +139,4 @@ dmypy.json
 !/checkpoints/.gitkeep
 /checkpoints/logs/**
 !/checkpoints/logs/**/.gitkeep
+*.tsv

@@ -25,7 +25,7 @@ def get_model(number_of_channel):
     return model
 
 
-def get_pretrained_models():
+def get_best_checkpoints():
     # read all checkpoint files
     checkpoint_files = [file for file in os.listdir('..//checkpoints//') if backbone in file]
     # score list
@@ -50,7 +50,12 @@ def get_pretrained_models():
             best_files.append('..//checkpoints//' + file)
         if 'sagittal' in file and str(sagittal_min_score) in file:
             best_files.append('..//checkpoints//' + file)
+    return best_files
+
+
+def get_pretrained_models():
     models = []
+    best_files = get_best_checkpoints()
     for i in range(len(best_files)):
         models.append(load_model(best_files[i], compile=False))
     return models
