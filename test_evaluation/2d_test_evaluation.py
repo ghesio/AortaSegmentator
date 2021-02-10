@@ -17,12 +17,10 @@ test_size = 1
 # get directories to load
 directories = get_test_set_directories(test_size=test_size)
 equalization = False
-# load files for pickle name [0] = axial, [1]=coronal, [2]=sagittal, [3] = combined
+# load file names for generating the dump file name
 best_files = get_best_checkpoints()
 timestamp = datetime.today().strftime('%Y%m%d_%H%M%S')
-files = [x[0:-11] + timestamp for x in best_files]
-files.append(files[0].replace('axial', 'combined'))
-files.append(files[0].replace('axial', 'roi'))
+dump_file_name = '..//checkpoints//' + best_files[0][17:-10].replace('axial_', '') + '-' + timestamp + '.npz'
 # load models [0] = axial, [1]=coronal, [2]=sagittal
 models = get_pretrained_models()
 # vectors to store the predictions on file system
@@ -48,6 +46,7 @@ for i in range(len(directories)):
     prediction_sagittal = np.empty(shape=scan_array.shape)
     prediction_combined = np.empty(shape=scan_array.shape)
 
+    # TODO test if faster and it holds the same results by passing the whole array to predict(..)
     # predict axial value
     logging.info('Predicting axial values')
     for j in range(scan_array.shape[0]):
@@ -69,11 +68,7 @@ for i in range(len(directories)):
     array_sagittal.append(prediction_sagittal)
     array_combined.append(prediction_combined)
 logging.info('Saving results')
-np.save(files[0], array_axial)
-np.save(files[1], array_coronal)
-np.save(files[2], array_sagittal)
-np.save(files[3], array_combined)
-np.save(files[4], roi)
-
+np.savez_compressed(file=dump_file_name, axial=array_axial, coronal=array_coronal,
+                    sagittal=array_sagittal, combined=array_combined, roi=array_combined)
 exit(0)
 

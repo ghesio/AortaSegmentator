@@ -8,16 +8,13 @@ import os
 import csv
 
 # load bin files for a given timestamp
-timestamp = '020210210_152825'
-bin_files = ['..//checkpoints//' + x for x in os.listdir('..//checkpoints//') if timestamp in x and '.npy' in x]
-if not bin_files:
+timestamp = '20210210_172739'
+bin_file = None
+try:
+    bin_file = ['..//checkpoints//' + x for x in os.listdir('..//checkpoints//') if timestamp in x and '.npz' in x][0]
+except IndexError:
     exit(-1)
-bin_files.sort()
-# bin_files[0] = axial
-# bin_files[1] = combined
-# bin_files[2] = coronal
-# bin_files[3] = roi
-# bin_files[4] = sagittal
+loaded_arrays = np.load(bin_file)
 # define threshold interval and delta
 threshold_interval = [0.6, 0.9]
 delta = 0.05
@@ -27,12 +24,12 @@ iou_map_coronal = {}
 iou_map_sagittal = {}
 iou_map_combined = {}
 # vectors to load the data
-array_axial = np.load(bin_files[0])
-array_coronal = np.load(bin_files[2])
-array_sagittal = np.load(bin_files[4])
-array_combined = np.load(bin_files[1])
-roi = np.load(bin_files[3])
-logging.info('Loaded files ' + str(bin_files))
+array_axial = loaded_arrays['axial']
+array_coronal = loaded_arrays['coronal']
+array_sagittal = loaded_arrays['sagittal']
+array_combined = loaded_arrays['combined']
+roi = loaded_arrays['roi']
+logging.info('Loaded files ' + bin_file)
 thresholds = np.arange(threshold_interval[0], threshold_interval[1], delta)
 # iterate and calculate IoU score
 for threshold in thresholds:
