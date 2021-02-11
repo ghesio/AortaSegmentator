@@ -27,6 +27,10 @@ from utils.misc import remove_everything_after_last
 from utils import custom_logger
 import logging
 
+# define validation and test size
+validation_size = 1
+test_size = 1
+
 
 def read_image_information_in_directory(directory):
 	for __root, __dirs, __files in os.walk(directory):
@@ -108,7 +112,18 @@ if __name__ == "__main__":
 				patient_map[patient_id]['sagittal']['max_slice'] = info[0][1]
 		else:
 			patient_map[patient_id]['scan_dir'] = remove_everything_after_last(_dir)
-
+	# define to which set of data the patients belongs to (train, validation, test)
+	total_patients = len(patient_map.keys())
+	counter = 0
+	for patient in patient_map:
+		if counter < total_patients - test_size - validation_size:
+			patient_map[patient]['partition'] = 'train'
+		else:
+			if total_patients - test_size - validation_size <= counter < total_patients - test_size:
+				patient_map[patient]['partition'] = 'validation'
+			else:
+				patient_map[patient]['partition'] = 'test'
+		counter = counter + 1
 	logging.info("Writing JSON info file")
 	with open('../data/info.json', 'w') as outfile:
 		json.dump(patient_map, outfile, indent=4)

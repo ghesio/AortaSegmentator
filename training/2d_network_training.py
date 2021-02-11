@@ -18,11 +18,10 @@ batch_size = 16
 epochs = 1
 # data parameter
 samples_from_each_patient = 20
-test_size = 1
 # load data
-(x_train, x_val, y_train, y_val) = dl.get_train_validation(direction=direction, augmentation=False,
-                                                            samples_from_each_patient=samples_from_each_patient,
-                                                            test_size=test_size)
+(x_train, y_train) = dl.get_train_set(direction=direction, samples_from_each_patient=samples_from_each_patient, augmentation=False)
+(x_val, y_val) = dl.get_validation_set(direction=direction, samples_from_each_patient=samples_from_each_patient)
+
 # add channel info to train set
 x_train = tf.expand_dims(x_train, axis=-1)
 # get model
@@ -48,8 +47,7 @@ history = model.fit(
    callbacks=[save_callback, early_stopping_callback]
 )
 print("Training end @ ", datetime.now().strftime("%H:%M:%S"))
-(x_test, y_test) = dl.get_test(direction=direction, samples_from_each_patient=samples_from_each_patient,
-                               test_size=test_size, augmentation=False)
+(x_test, y_test) = dl.get_validation_set(direction=direction, samples_from_each_patient=samples_from_each_patient)
 print("\r\nTraining results")
 for key in history.history.keys():
     print('\t' + key+':', history.history[key])
