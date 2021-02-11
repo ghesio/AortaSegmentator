@@ -79,18 +79,18 @@ if __name__ == "__main__":
     max_z = -99999
     # iterate through every patient and get bounding box vertexes
     for patient in patient_map:
-        if patient_map[patient]['axial']['min_y'] < min_y:
-            min_y = patient_map[patient]['axial']['min_y']
-        if patient_map[patient]['axial']['max_y'] > max_y:
-            max_y = patient_map[patient]['axial']['max_y']
-        if patient_map[patient]['axial']['min_x'] < min_x:
-            min_x = patient_map[patient]['axial']['min_x']
-        if patient_map[patient]['axial']['max_x'] > max_x:
-            max_x = patient_map[patient]['axial']['max_x']
-        if patient_map[patient]['coronal']['min_z'] < min_z:
-            min_z = patient_map[patient]['coronal']['min_z']
-        if patient_map[patient]['coronal']['max_z'] > max_z:
-            max_z = patient_map[patient]['coronal']['max_z']
+        if patient_map[patient]['coordinates']['min_y'] < min_y:
+            min_y = patient_map[patient]['coordinates']['min_y']
+        if patient_map[patient]['coordinates']['max_y'] > max_y:
+            max_y = patient_map[patient]['coordinates']['max_y']
+        if patient_map[patient]['coordinates']['min_x'] < min_x:
+            min_x = patient_map[patient]['coordinates']['min_x']
+        if patient_map[patient]['coordinates']['max_x'] > max_x:
+            max_x = patient_map[patient]['coordinates']['max_x']
+        if patient_map[patient]['coordinates']['min_z'] < min_z:
+            min_z = patient_map[patient]['coordinates']['min_z']
+        if patient_map[patient]['coordinates']['max_z'] > max_z:
+            max_z = patient_map[patient]['coordinates']['max_z']
         patient_map[patient]['roi_cut_dir'] = patient_map[patient]['roi_dir'].replace('roi', 'roi_cut')
         patient_map[patient]['scan_cut_dir'] = patient_map[patient]['scan_dir'].replace('scan', 'scan_cut')
 

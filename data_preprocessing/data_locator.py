@@ -7,13 +7,10 @@ JSON format:
 		"axial": {
 			"min_slice": min slices index containing info (not all background),
 			"max_slice": max slices index containing info (not all background),
-			"min_pixel_0": min non background pixel along rows of view,
-			"min_pixel_1": min non background pixel along columns of view,
-			"max_pixel_0": max non background pixel along rows of view,
-			"max_pixel_1": min non background pixel along rows of view
 		},
 		"coronal": { as above },
 		"sagittal": { as above },
+		"coordinates" : { contains minimum and maximum not blank informative pixel coordinate }
 		"scan_dir": "Root directory containing the scan slices"
 	}
 
@@ -80,10 +77,12 @@ if __name__ == "__main__":
 		patient_id = re.sub(r"^.*?data\\out\\", '', _dir).split("\\", 1)[0]
 		if patient_id not in patient_map:
 			patient_map[patient_id] = {}
-		# get information about informative images in 'roi' dir
+			patient_map[patient_id]['coordinates'] = {}
+		# ignore if cut directory
 		if 'cut' in _dir:
 			continue
 		if 'roi' in _dir:
+			# get information about informative images in 'roi' dir
 			patient_map[patient_id]['roi_dir'] = remove_everything_after_last(_dir)
 			logging.info('Opening directory ' + _dir)
 			info = read_image_information_in_directory(_dir)
@@ -92,27 +91,21 @@ if __name__ == "__main__":
 				patient_map[patient_id]['axial'] = {}
 				patient_map[patient_id]['axial']['min_slice'] = info[0][0]
 				patient_map[patient_id]['axial']['max_slice'] = info[0][1]
-				patient_map[patient_id]['axial']['min_y'] = info[1][0]
-				patient_map[patient_id]['axial']['min_x'] = info[1][1]
-				patient_map[patient_id]['axial']['max_y'] = info[2][0]
-				patient_map[patient_id]['axial']['max_x'] = info[2][1]
+				patient_map[patient_id]['coordinates']['min_y'] = info[1][0]
+				patient_map[patient_id]['coordinates']['min_x'] = info[1][1]
+				patient_map[patient_id]['coordinates']['max_y'] = info[2][0]
+				patient_map[patient_id]['coordinates']['max_x'] = info[2][1]
 			elif 'coronal' in _dir:
 				# Z-X plane
 				patient_map[patient_id]['coronal'] = {}
 				patient_map[patient_id]['coronal']['min_slice'] = info[0][0]
 				patient_map[patient_id]['coronal']['max_slice'] = info[0][1]
-				patient_map[patient_id]['coronal']['min_z'] = info[1][0]
-				patient_map[patient_id]['coronal']['min_x'] = info[1][1]
-				patient_map[patient_id]['coronal']['max_z'] = info[2][0]
-				patient_map[patient_id]['coronal']['max_x'] = info[2][1]
+				patient_map[patient_id]['coordinates']['min_z'] = info[1][0]
+				patient_map[patient_id]['coordinates']['max_z'] = info[2][0]
 			elif 'sagittal' in _dir:
 				patient_map[patient_id]['sagittal'] = {}
 				patient_map[patient_id]['sagittal']['min_slice'] = info[0][0]
 				patient_map[patient_id]['sagittal']['max_slice'] = info[0][1]
-				patient_map[patient_id]['sagittal']['min_z'] = info[1][0]
-				patient_map[patient_id]['sagittal']['min_y'] = info[1][1]
-				patient_map[patient_id]['sagittal']['max_z'] = info[2][0]
-				patient_map[patient_id]['sagittal']['max_y'] = info[2][1]
 		else:
 			patient_map[patient_id]['scan_dir'] = remove_everything_after_last(_dir)
 
