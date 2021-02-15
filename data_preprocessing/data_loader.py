@@ -200,6 +200,16 @@ def get_validation_set(direction, samples_from_each_patient=0, normalization=Tru
     return np.array(scan_array, dtype='float32'), np.array(roi_array, dtype='float32')
 
 
+def get_test_set_directories():
+    with open('../data/info.json') as f:
+        patient_map = json.load(f)
+        directories = []
+        for patient in patient_map:
+            if patient_map[patient]['partition'] == 'test':
+                directories.append((patient_map[patient]['scan_dir'], patient_map[patient]['roi_dir']))
+        return directories
+
+
 if __name__ == "__main__":
     train = get_train_set('axial', samples_from_each_patient=20, augmentation=True)
     print(train[0].shape, train[1].shape)

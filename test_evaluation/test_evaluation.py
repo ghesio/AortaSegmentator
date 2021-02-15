@@ -12,10 +12,8 @@ import logging
 from datetime import datetime
 
 
-# define the test size
-test_size = 1
 # get directories to load
-directories = get_test_set_directories(test_size=test_size)
+directories = get_test_set_directories()
 equalization = False
 # load file names for generating the dump file name
 best_files = get_best_checkpoints()
