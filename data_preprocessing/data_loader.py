@@ -210,7 +210,6 @@ def get_validation_set(direction, samples_from_each_patient=0, normalization=Tru
                 print('File not found, skipping ' + roi_uri)
                 continue
             roi_slices.append(roi_load)
-        assert len(roi_slices) == samples_from_each_patient == len(scan_slices)
         # iterate through data to be added to the dataset arrays
         for i in range(len(scan_slices)):
             current_slice = scan_slices[i]
