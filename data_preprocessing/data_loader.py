@@ -23,7 +23,7 @@ def get_train_set(direction, samples_from_each_patient=20, normalization=True, a
     :param augmentation: if True augment data using rotation, zoom and shifts
     :return: data or -1 if a wrong direction is chose
     """
-    if direction is not 'axial' and direction is not 'coronal' and direction is not 'sagittal':
+    if direction != 'axial' and direction != 'coronal' and direction != 'sagittal':
         return -1
     with open(data_file) as f:
         patient_map = json.load(f)
@@ -35,8 +35,8 @@ def get_train_set(direction, samples_from_each_patient=20, normalization=True, a
         if patient_map[patient]['partition'] != 'train':
             continue
         # get location of cut slices (both scan and roi)
-        scan_cut_dir = patient_map[patient]['scan_cut_dir'] + '\\' + direction
-        roi_cut_dir = patient_map[patient]['roi_cut_dir'] + '\\' + direction
+        scan_cut_dir = patient_map[patient]['scan_cut_dir'] + '/' + direction
+        roi_cut_dir = patient_map[patient]['roi_cut_dir'] + '/' + direction
         # get min and max informative slice indexes
         min_slice_index = patient_map[patient][direction]['min_slice']
         max_slice_index = patient_map[patient][direction]['max_slice']
@@ -49,8 +49,8 @@ def get_train_set(direction, samples_from_each_patient=20, normalization=True, a
         scan_slices = []
         roi_slices = []
         for index in drawn_indexes:
-            scan_uri = scan_cut_dir + '\\' + direction + '_' + str.zfill(str(index), 4) + '.png'
-            roi_uri = roi_cut_dir + '\\' + direction + '_' + str.zfill(str(index), 4) + '.png'
+            scan_uri = scan_cut_dir + '/' + direction + '_' + str.zfill(str(index), 4) + '.png'
+            roi_uri = roi_cut_dir + '/' + direction + '_' + str.zfill(str(index), 4) + '.png'
             scan_load = np.array(imageio.imread(uri=scan_uri), dtype='uint8')
             scan_slices.append(scan_load)
             roi_load = np.array(imageio.imread(uri=roi_uri), dtype='uint8')
@@ -96,7 +96,7 @@ def get_test_set(direction, samples_from_each_patient=0, normalization=True):
     :param normalization: normalize between 0 and 1 using a min max scaler
     :return: fata or -1 if a wrong direction is chose
     """
-    if direction is not 'axial' and direction is not 'coronal' and direction is not 'sagittal':
+    if direction != 'axial' and direction != 'coronal' and direction != 'sagittal':
         return -1
     with open(data_file) as f:
         patient_map = json.load(f)
@@ -108,8 +108,8 @@ def get_test_set(direction, samples_from_each_patient=0, normalization=True):
         if patient_map[patient]['partition'] != 'test':
             continue
         # get location of cut slices (both scan and roi)
-        scan_cut_dir = patient_map[patient]['scan_cut_dir'] + '\\' + direction
-        roi_cut_dir = patient_map[patient]['roi_cut_dir'] + '\\' + direction
+        scan_cut_dir = patient_map[patient]['scan_cut_dir'] + '/' + direction
+        roi_cut_dir = patient_map[patient]['roi_cut_dir'] + '/' + direction
         # get min and max informative slice indexes
         min_slice_index = patient_map[patient][direction]['min_slice']
         max_slice_index = patient_map[patient][direction]['max_slice']
@@ -122,8 +122,8 @@ def get_test_set(direction, samples_from_each_patient=0, normalization=True):
         scan_slices = []
         roi_slices = []
         for index in drawn_indexes:
-            scan_uri = scan_cut_dir + '\\' + direction + '_' + str.zfill(str(index), 4) + '.png'
-            roi_uri = roi_cut_dir + '\\' + direction + '_' + str.zfill(str(index), 4) + '.png'
+            scan_uri = scan_cut_dir + '/' + direction + '_' + str.zfill(str(index), 4) + '.png'
+            roi_uri = roi_cut_dir + '/' + direction + '_' + str.zfill(str(index), 4) + '.png'
             scan_load = np.array(imageio.imread(uri=scan_uri), dtype='uint8')
             scan_slices.append(scan_load)
             roi_load = np.array(imageio.imread(uri=roi_uri), dtype='uint8')
@@ -153,7 +153,7 @@ def get_validation_set(direction, samples_from_each_patient=0, normalization=Tru
     :param normalization: normalize between 0 and 1 using a min max scaler
     :return: data or -1 if a wrong direction is chose
     """
-    if direction is not 'axial' and direction is not 'coronal' and direction is not 'sagittal':
+    if direction != 'axial' and direction != 'coronal' and direction != 'sagittal':
         return -1
     with open(data_file) as f:
         patient_map = json.load(f)
@@ -165,8 +165,8 @@ def get_validation_set(direction, samples_from_each_patient=0, normalization=Tru
         if patient_map[patient]['partition'] != 'validation':
             continue
         # get location of cut slices (both scan and roi)
-        scan_cut_dir = patient_map[patient]['scan_cut_dir'] + '\\' + direction
-        roi_cut_dir = patient_map[patient]['roi_cut_dir'] + '\\' + direction
+        scan_cut_dir = patient_map[patient]['scan_cut_dir'] + '/' + direction
+        roi_cut_dir = patient_map[patient]['roi_cut_dir'] + '/' + direction
         # get min and max informative slice indexes
         min_slice_index = patient_map[patient][direction]['min_slice']
         max_slice_index = patient_map[patient][direction]['max_slice']
@@ -179,8 +179,8 @@ def get_validation_set(direction, samples_from_each_patient=0, normalization=Tru
         scan_slices = []
         roi_slices = []
         for index in drawn_indexes:
-            scan_uri = scan_cut_dir + '\\' + direction + '_' + str.zfill(str(index), 4) + '.png'
-            roi_uri = roi_cut_dir + '\\' + direction + '_' + str.zfill(str(index), 4) + '.png'
+            scan_uri = scan_cut_dir + '/' + direction + '_' + str.zfill(str(index), 4) + '.png'
+            roi_uri = roi_cut_dir + '/' + direction + '_' + str.zfill(str(index), 4) + '.png'
             scan_load = np.array(imageio.imread(uri=scan_uri), dtype='uint8')
             scan_slices.append(scan_load)
             roi_load = np.array(imageio.imread(uri=roi_uri), dtype='uint8')
