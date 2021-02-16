@@ -51,9 +51,17 @@ def get_train_set(direction, samples_from_each_patient=20, normalization=True, a
         for index in drawn_indexes:
             scan_uri = scan_cut_dir + '/' + direction + '_' + str.zfill(str(index), 4) + '.png'
             roi_uri = roi_cut_dir + '/' + direction + '_' + str.zfill(str(index), 4) + '.png'
-            scan_load = np.array(imageio.imread(uri=scan_uri), dtype='uint8')
+            try:
+                scan_load = np.array(imageio.imread(uri=scan_uri), dtype='uint8')
+            except FileNotFoundError:
+                print('File not found, skipping ' + scan_uri)
+                continue
             scan_slices.append(scan_load)
-            roi_load = np.array(imageio.imread(uri=roi_uri), dtype='uint8')
+            try:
+                roi_load = np.array(imageio.imread(uri=roi_uri), dtype='uint8')
+            except FileNotFoundError:
+                print('File not found, skipping ' + roi_uri)
+                continue
             roi_slices.append(roi_load)
         # iterate through data to be added to the dataset arrays
         for i in range(len(scan_slices)):
@@ -124,9 +132,17 @@ def get_test_set(direction, samples_from_each_patient=0, normalization=True):
         for index in drawn_indexes:
             scan_uri = scan_cut_dir + '/' + direction + '_' + str.zfill(str(index), 4) + '.png'
             roi_uri = roi_cut_dir + '/' + direction + '_' + str.zfill(str(index), 4) + '.png'
-            scan_load = np.array(imageio.imread(uri=scan_uri), dtype='uint8')
+            try:
+                scan_load = np.array(imageio.imread(uri=scan_uri), dtype='uint8')
+            except FileNotFoundError:
+                print('File not found, skipping ' + scan_uri)
+                continue
             scan_slices.append(scan_load)
-            roi_load = np.array(imageio.imread(uri=roi_uri), dtype='uint8')
+            try:
+                roi_load = np.array(imageio.imread(uri=roi_uri), dtype='uint8')
+            except FileNotFoundError:
+                print('File not found, skipping ' + roi_uri)
+                continue
             roi_slices.append(roi_load)
         assert len(roi_slices) == samples_from_each_patient == len(scan_slices)
         # iterate through data to be added to the dataset arrays
@@ -181,9 +197,17 @@ def get_validation_set(direction, samples_from_each_patient=0, normalization=Tru
         for index in drawn_indexes:
             scan_uri = scan_cut_dir + '/' + direction + '_' + str.zfill(str(index), 4) + '.png'
             roi_uri = roi_cut_dir + '/' + direction + '_' + str.zfill(str(index), 4) + '.png'
-            scan_load = np.array(imageio.imread(uri=scan_uri), dtype='uint8')
+            try:
+                scan_load = np.array(imageio.imread(uri=scan_uri), dtype='uint8')
+            except FileNotFoundError:
+                print('File not found, skipping ' + scan_uri)
+                continue
             scan_slices.append(scan_load)
-            roi_load = np.array(imageio.imread(uri=roi_uri), dtype='uint8')
+            try:
+                roi_load = np.array(imageio.imread(uri=roi_uri), dtype='uint8')
+            except FileNotFoundError:
+                print('File not found, skipping ' + roi_uri)
+                continue
             roi_slices.append(roi_load)
         assert len(roi_slices) == samples_from_each_patient == len(scan_slices)
         # iterate through data to be added to the dataset arrays
