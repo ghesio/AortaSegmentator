@@ -2,7 +2,8 @@ import numpy as np
 from utils import custom_logger
 import logging
 
-def remove_everything_after_last(haystack, needle='\\', n=1):
+
+def remove_everything_after_last(haystack, needle='/', n=1):
     """
     Remove everything after the n instance of a char in a string
     :param haystack: the input string

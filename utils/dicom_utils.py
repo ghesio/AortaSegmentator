@@ -138,9 +138,9 @@ def save_slices(direction, image_array, root_dir):
     os.makedirs(save_directory)
     # get max and min value for rescaling
     __range = None
-    if direction is 'axial':
+    if direction == 'axial':
         __range = image_array.shape[0]
-    elif direction is 'coronal':
+    elif direction == 'coronal':
         __range = image_array.shape[1]
     else:
         __range = image_array.shape[2]
@@ -154,12 +154,9 @@ def save_slices(direction, image_array, root_dir):
         output_file_name = save_directory + direction + '_' + str(i).zfill(4) + '.png'
         logging.debug('Saving image to ' + output_file_name)
         # TODO test more the image orientation filter to avoid rotating the images
-        if direction is 'axial':
+        if direction == 'axial':
             imageio.imwrite(output_file_name, np.flipud(image_array[i, :, :]), format='png')
-        elif direction is 'coronal':
+        elif direction == 'coronal':
             imageio.imwrite(output_file_name, image_array[:, i, :], format='png')
         else:
             imageio.imwrite(output_file_name, np.fliplr(image_array[:, :, i]), format='png')
-
-
-

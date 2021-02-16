@@ -11,7 +11,8 @@ JSON format:
 		"coronal": { as above },
 		"sagittal": { as above },
 		"coordinates" : { contains minimum and maximum not blank informative pixel coordinate }
-		"scan_dir": "Root directory containing the scan slices"
+		"scan_dir": "Root directory containing the scan slices",
+		"partition": if the patient belongs to train, validation or test set
 	}
 
 """
@@ -28,8 +29,8 @@ from utils import custom_logger
 import logging
 
 # define validation and test size
-validation_size = 1
-test_size = 1
+validation_size = 4
+test_size = 4
 
 
 def read_image_information_in_directory(directory):
@@ -73,12 +74,12 @@ def read_image_information_in_directory(directory):
 if __name__ == "__main__":
 	# read all directory in '...data/out'
 	dir_names = []
-	for root, dirs, files in os.walk('../data/out'):
+	for root, dirs, files in os.walk('data/out'):
 		if not dirs:
 			dir_names += [os.path.abspath(root)]
 	patient_map = {}
 	for _dir in dir_names:
-		patient_id = re.sub(r"^.*?data\\out\\", '', _dir).split("\\", 1)[0]
+		patient_id = re.sub(r'^.*?data/out/', '', _dir).split("/", 1)[0]
 		if patient_id not in patient_map:
 			patient_map[patient_id] = {}
 			patient_map[patient_id]['coordinates'] = {}
@@ -125,6 +126,6 @@ if __name__ == "__main__":
 				patient_map[patient]['partition'] = 'test'
 		counter = counter + 1
 	logging.info("Writing JSON info file")
-	with open('../data/info.json', 'w') as outfile:
+	with open('data/info.json', 'w') as outfile:
 		json.dump(patient_map, outfile, indent=4)
 	exit(0)

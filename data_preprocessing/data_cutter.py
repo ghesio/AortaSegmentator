@@ -12,12 +12,12 @@ def __cut(directory):
     for __root, __dirs, __files in os.walk(directory):
         if __files:
             for __i in range(len(__files) - 1):
-                current_image_path = __root + '\\' + __files[__i]
+                current_image_path = __root + '/' + __files[__i]
                 if 'roi' in _dir:
                     out_dir = __root.replace('roi', 'roi_cut')
                 else:
                     out_dir = __root.replace('scan', 'scan_cut')
-                out_image_path = out_dir + '\\' + __files[__i]
+                out_image_path = out_dir + '/' + __files[__i]
                 if not os.path.exists(out_dir):
                     os.makedirs(out_dir)
                 # read the image into a numpy array
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     # dry run flag
     dry_run = False
     # read JSON containing information
-    with open('../data/info.json') as f:
+    with open('data/info.json') as f:
         patient_map = json.load(f)
     # initialize minima and maxima variables
     min_x = 99999
@@ -95,7 +95,7 @@ if __name__ == "__main__":
         patient_map[patient]['scan_cut_dir'] = patient_map[patient]['scan_dir'].replace('scan', 'scan_cut')
 
     logging.info("Updating JSON info file")
-    with open('../data/info.json', 'w') as outfile:
+    with open('data/info.json', 'w') as outfile:
         json.dump(patient_map, outfile, indent=4)
 
     logging.info("Buonding box location (before padding) (x,y,z): (" + str(min_x) + "-" + str(max_x) + ") x (" +
@@ -143,7 +143,7 @@ if __name__ == "__main__":
         exit(1)
     # iterate through directories
     dir_names = []
-    for root, dirs, files in os.walk('../data/out'):
+    for root, dirs, files in os.walk('data/out'):
         if not dirs:
             dir_names += [os.path.abspath(root)]
     for _dir in dir_names:
