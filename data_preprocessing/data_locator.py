@@ -42,8 +42,8 @@ def read_image_information_in_directory(directory):
 			min_info = [9999, 9999]
 			max_info = [-1, -1]
 			for i in range(len(__files) - 1):
-				current_image_path = __root + '\\' + __files[i]
-				next_image_path = __root + '\\' + __files[i + 1]
+				current_image_path = __root + '/' + __files[i]
+				next_image_path = __root + '/' + __files[i + 1]
 				# read the image into a numpy array
 				current_image = np.array(imageio.imread(uri=current_image_path), dtype='uint8')
 				next_image = np.array(imageio.imread(uri=next_image_path), dtype='uint8')
