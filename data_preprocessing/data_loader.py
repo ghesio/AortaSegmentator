@@ -10,6 +10,8 @@ shift_array = np.array(np.arange(-5, 1 + 5, 1))
 shift_array = shift_array[shift_array != 0]
 rotation_array = np.copy(shift_array)
 zoom_array = np.array([0.8, 0.9, 1.1, 1.2, 1.3])
+# data file
+data_file = 'data/info.json'
 
 
 def get_train_set(direction, samples_from_each_patient=20, normalization=True, augmentation=True):
@@ -23,7 +25,7 @@ def get_train_set(direction, samples_from_each_patient=20, normalization=True, a
     """
     if direction is not 'axial' and direction is not 'coronal' and direction is not 'sagittal':
         return -1
-    with open('../data/info.json') as f:
+    with open(data_file) as f:
         patient_map = json.load(f)
     # instantiate data and ground truth array
     scan_array = []
@@ -96,7 +98,7 @@ def get_test_set(direction, samples_from_each_patient=0, normalization=True):
     """
     if direction is not 'axial' and direction is not 'coronal' and direction is not 'sagittal':
         return -1
-    with open('../data/info.json') as f:
+    with open(data_file) as f:
         patient_map = json.load(f)
     # instantiate data and ground truth array
     scan_array = []
@@ -153,7 +155,7 @@ def get_validation_set(direction, samples_from_each_patient=0, normalization=Tru
     """
     if direction is not 'axial' and direction is not 'coronal' and direction is not 'sagittal':
         return -1
-    with open('../data/info.json') as f:
+    with open(data_file) as f:
         patient_map = json.load(f)
     # instantiate data and ground truth array
     scan_array = []
@@ -201,7 +203,7 @@ def get_validation_set(direction, samples_from_each_patient=0, normalization=Tru
 
 
 def get_test_set_directories():
-    with open('../data/info.json') as f:
+    with open(data_file) as f:
         patient_map = json.load(f)
         directories = []
         for patient in patient_map:

@@ -16,10 +16,10 @@ dry_run = True
 # define which network to train
 directions = ['axial', 'coronal', 'sagittal']
 # network parameter
-batch_size = 16
-epochs = 1
+batch_size = 32
+epochs = 20
 # data parameter
-samples_from_each_patient = 20
+samples_from_each_patient = 0
 # load data
 for direction in directions:
     print('Start training for direction ' + direction)
@@ -38,7 +38,8 @@ for direction in directions:
     # define callbacks
     # a) save checkpoints
     save_callback = tf.keras.callbacks.ModelCheckpoint(
-        filepath='../checkpoints/'+direction+'_'+str(samples_from_each_patient)+'_'+backbone+'-{epoch:02d}-{val_loss:.2f}.hdf5',
+        filepath='checkpoints/' + direction + '_' + str(samples_from_each_patient) + '_'
+                 + backbone + '-{epoch:02d}-{val_loss:.2f}.hdf5',
         save_weights_only=False,
         monitor='val_loss',
         mode='min',
