@@ -61,7 +61,7 @@ def __convert_dicom(input_dir, out_root_dir, directions=(1, 1, 1), equalization=
         save_slices('sagittal', image_array, out_root_dir)
 
 
-if __name__ == "__main__":
+def main():
     file_map = __read_all_directories()
     if not file_map:
         logging.error("Nothing to process - aborting.")
@@ -70,3 +70,7 @@ if __name__ == "__main__":
         # equalization set to False for faster testing
         __convert_dicom(key, value, equalization=False)
     exit(0)
+
+
+if __name__ == "__main__":
+    main()
