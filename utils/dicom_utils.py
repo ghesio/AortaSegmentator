@@ -133,8 +133,8 @@ def resample_image(itk_image, out_spacing=(1.0, 1.0, 1.0)):
 def save_slices(direction, image_array, root_dir):
     save_directory = root_dir + '/' + direction + '/'
     if os.path.exists(save_directory):
-        logging.warning('Deleting old directory ' + save_directory)
-        shutil.rmtree(save_directory)
+        logging.warning('Directory ' + save_directory + ' already exists. Exiting.')
+        return
     os.makedirs(save_directory)
     # get max and min value for rescaling
     __range = None
