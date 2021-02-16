@@ -67,8 +67,8 @@ def main():
         logging.error("Nothing to process - aborting.")
         exit(-1)
     for key, value in file_map.items():
-        # equalization set to False for faster testing
-        __convert_dicom(key, value, equalization=False)
+        # set equalization to false for faster testing
+        __convert_dicom(key, value, equalization=True)
     exit(0)
 
 
