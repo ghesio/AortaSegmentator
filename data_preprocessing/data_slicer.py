@@ -21,7 +21,7 @@ def __read_all_directories():
     :return: dictionary input-output directory (in ../data/out)
     """
     input_dir_names = []
-    for root, dirs, files in os.walk('../data/in'):
+    for root, dirs, files in os.walk('data/in'):
         if not dirs:
             input_dir_names += [os.path.abspath(root)]
     __file_map = {}

@@ -131,7 +131,7 @@ def resample_image(itk_image, out_spacing=(1.0, 1.0, 1.0)):
 
 
 def save_slices(direction, image_array, root_dir):
-    save_directory = root_dir + '\\' + direction + '\\'
+    save_directory = root_dir + '/' + direction + '/'
     if os.path.exists(save_directory):
         logging.warning('Deleting old directory ' + save_directory)
         shutil.rmtree(save_directory)
@@ -162,7 +162,4 @@ def save_slices(direction, image_array, root_dir):
             imageio.imwrite(output_file_name, np.fliplr(image_array[:, :, i]), format='png')
 
 
-if __name__ == "__main__":
-    convert_image_to_numpy_array('E:\\Tesi\\AortaSegmentator\\data\\in\\NERI_EUGENIO\\scan', equalization=False)
-    exit(0)
 
