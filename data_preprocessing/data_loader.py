@@ -93,7 +93,8 @@ def get_train_set(direction, samples_from_each_patient=20, normalization=True, a
             scan_array[i] = scan_array[i] / 255
             roi_array[i] = roi_array[i] / 255
     # return train set
-    return shuffle(np.array(scan_array, dtype='float32'), np.array(roi_array, dtype='float32'), random_state=42)
+    shuffled = shuffle(np.array(scan_array, dtype='float32'), np.array(roi_array, dtype='float32'), random_state=42)
+    return shuffled[0], shuffled[1]
 
 
 def get_test_set(direction, samples_from_each_patient=0, normalization=True):
