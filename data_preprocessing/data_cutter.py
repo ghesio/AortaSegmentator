@@ -2,10 +2,10 @@ import json
 import math
 import os
 import numpy as np
-import imageio
 # LOGGING
 from utils import custom_logger
 import logging
+import cv2
 
 
 def __cut(directory):
@@ -61,7 +61,9 @@ def __cut(directory):
                         cut_image = np.pad(cut_image, ((0, 0), (pad_value + 1, pad_value)),
                                            mode='constant', constant_values=0)
                 logging.debug('Saving image to ' + out_image_path)
-                imageio.imwrite(out_image_path, cut_image, format='png')
+                status = cv2.imwrite(filename=out_image_path, img=cut_image)
+                if status is False:
+                    logging.error('Error saving image. Path:' + out_image_path + " - image shape: " + cut_image.shape)
 
 
 if __name__ == "__main__":
@@ -95,7 +97,7 @@ if __name__ == "__main__":
         patient_map[patient]['scan_cut_dir'] = patient_map[patient]['scan_dir'].replace('scan', 'scan_cut')
 
     logging.info("Updating JSON info file")
-    with open('data/info.json', 'w') as outfile:
+    with open('../data/info.json', 'w') as outfile:
         json.dump(patient_map, outfile, indent=4)
 
     logging.info("Buonding box location (before padding) (x,y,z): (" + str(min_x) + "-" + str(max_x) + ") x (" +

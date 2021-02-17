@@ -2,8 +2,8 @@ import math
 import os
 import shutil
 import SimpleITK as sitk
+import cv2
 # LOGGING
-import imageio
 import numpy as np
 from utils import custom_logger
 import logging
@@ -155,8 +155,17 @@ def save_slices(direction, image_array, root_dir):
         logging.debug('Saving image to ' + output_file_name)
         # TODO test more the image orientation filter to avoid rotating the images
         if direction == 'axial':
-            imageio.imwrite(output_file_name, np.flipud(image_array[i, :, :]), format='png')
+            status = cv2.imwrite(filename=output_file_name, img=np.flipud(image_array[i, :, :]))
+            if status is False:
+                logging.error('Error saving image. Path:' + output_file_name + " - image shape: " +
+                              output_file_name.shape)
         elif direction == 'coronal':
-            imageio.imwrite(output_file_name, image_array[:, i, :], format='png')
+            status = cv2.imwrite(filename=output_file_name, img=image_array[:, i, :])
+            if status is False:
+                logging.error('Error saving image. Path:' + output_file_name + " - image shape: " +
+                              output_file_name.shape)
         else:
-            imageio.imwrite(output_file_name, np.fliplr(image_array[:, :, i]), format='png')
+            status = cv2.imwrite(filename=output_file_name, img=np.fliplr(image_array[:, :, i]))
+            if status is False:
+                logging.error('Error saving image. Path:' + output_file_name + " - image shape: " +
+                              output_file_name.shape)
