@@ -97,7 +97,7 @@ if __name__ == "__main__":
         patient_map[patient]['scan_cut_dir'] = patient_map[patient]['scan_dir'].replace('scan', 'scan_cut')
 
     logging.info("Updating JSON info file")
-    with open('../data/info.json', 'w') as outfile:
+    with open('data/info.json', 'w') as outfile:
         json.dump(patient_map, outfile, indent=4)
 
     logging.info("Buonding box location (before padding) (x,y,z): (" + str(min_x) + "-" + str(max_x) + ") x (" +
