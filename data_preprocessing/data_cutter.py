@@ -6,6 +6,7 @@ import numpy as np
 from utils import custom_logger
 import logging
 import cv2
+import imageio
 
 
 def __cut(directory):
