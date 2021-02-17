@@ -10,64 +10,63 @@ import imageio
 
 
 def __cut(directory):
-    for __root, __dirs, __files in os.walk(directory):
-        if __files:
-            for __i in range(len(__files) - 1):
-                current_image_path = __root + '/' + __files[__i]
-                if 'roi' in _dir:
-                    out_dir = __root.replace('roi', 'roi_cut')
-                else:
-                    out_dir = __root.replace('scan', 'scan_cut')
-                out_image_path = out_dir + '/' + __files[__i]
-                if not os.path.exists(out_dir):
-                    os.makedirs(out_dir)
-                # read the image into a numpy array
-                current_image = np.array(imageio.imread(uri=current_image_path), dtype='uint8')
-                cut_image = None
-                lower_y = center_y - int(new_side_y / 2)
-                upper_y = center_y + int(new_side_y / 2)
-                lower_x = center_x - int(new_side_x / 2)
-                upper_x = center_x + int(new_side_x / 2)
-                lower_z = center_z - int(new_side_z / 2)
-                upper_z = center_z + int(new_side_z / 2)
+    dir_files = [x for x in os.listdir(directory) if '.png' in x]
+    for j in range(len(dir_files)):
+        current_image_path = directory + '/' + dir_files[j]
+        if 'roi' in _dir:
+            out_dir = directory.replace('roi', 'roi_cut')
+        else:
+            out_dir = directory.replace('scan', 'scan_cut')
+        out_image_path = out_dir + '/' + dir_files[j]
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+        # read the image into a numpy array
+        current_image = np.array(imageio.imread(uri=current_image_path), dtype='uint8')
+        cut_image = None
+        lower_y = center_y - int(new_side_y / 2)
+        upper_y = center_y + int(new_side_y / 2)
+        lower_x = center_x - int(new_side_x / 2)
+        upper_x = center_x + int(new_side_x / 2)
+        lower_z = center_z - int(new_side_z / 2)
+        upper_z = center_z + int(new_side_z / 2)
 
-                if 'axial' in __root:
-                    cut_image = current_image[lower_y:upper_y, lower_x:upper_x]
-                    if cut_image.shape[0] < new_side_y:
-                        pad_value = int((new_side_y - cut_image.shape[0]) / 2)
-                        cut_image = np.pad(cut_image, ((pad_value + 1, pad_value), (0, 0)),
-                                           mode='constant', constant_values=0)
-                    if cut_image.shape[1] < new_side_x:
-                        pad_value = int((new_side_x - cut_image.shape[1]) / 2)
-                        cut_image = np.pad(cut_image, ((0, 0), (pad_value + 1, pad_value)),
-                                           mode='constant', constant_values=0)
-                if 'coronal' in __root:
-                    cut_image = current_image[lower_z:upper_z, lower_x:upper_x]
-                    if cut_image.shape[0] < new_side_z:
-                        pad_value = int((new_side_z - cut_image.shape[0]) / 2)
-                        cut_image = np.pad(cut_image, ((pad_value + 1, pad_value), (0, 0)),
-                                           mode='constant', constant_values=0)
-                    if cut_image.shape[1] < new_side_x:
-                        pad_value = int((new_side_x - cut_image.shape[1]) / 2)
-                        cut_image = np.pad(cut_image, ((0, 0), (pad_value + 1, pad_value)),
-                                           mode='constant', constant_values=0)
-                if 'sagittal' in __root:
-                    cut_image = current_image[lower_z:upper_z, lower_y:upper_y]
-                    if cut_image.shape[0] < new_side_z:
-                        pad_value = int((new_side_z - cut_image.shape[0]) / 2)
-                        cut_image = np.pad(cut_image, ((pad_value + 1, pad_value), (0, 0)),
-                                           mode='constant', constant_values=0)
-                    if cut_image.shape[1] < new_side_y:
-                        pad_value = int((new_side_y - cut_image.shape[1]) / 2)
-                        cut_image = np.pad(cut_image, ((0, 0), (pad_value + 1, pad_value)),
-                                           mode='constant', constant_values=0)
-                logging.debug('Saving image to ' + out_image_path)
-                if cut_image is None:
-                    logger.error('Nothing to save - ' + out_image_path)
-                status = cv2.imwrite(filename=out_image_path, img=cut_image)
-                if status is False:
-                    logging.error('Error saving image. Path:' + out_image_path
-                                  + " - image shape: " + str(cut_image.shape))
+        if 'axial' in directory:
+            cut_image = current_image[lower_y:upper_y, lower_x:upper_x]
+            if cut_image.shape[0] < new_side_y:
+                pad_value = int((new_side_y - cut_image.shape[0]) / 2)
+                cut_image = np.pad(cut_image, ((pad_value + 1, pad_value), (0, 0)),
+                                   mode='constant', constant_values=0)
+            if cut_image.shape[1] < new_side_x:
+                pad_value = int((new_side_x - cut_image.shape[1]) / 2)
+                cut_image = np.pad(cut_image, ((0, 0), (pad_value + 1, pad_value)),
+                                   mode='constant', constant_values=0)
+        if 'coronal' in directory:
+            cut_image = current_image[lower_z:upper_z, lower_x:upper_x]
+            if cut_image.shape[0] < new_side_z:
+                pad_value = int((new_side_z - cut_image.shape[0]) / 2)
+                cut_image = np.pad(cut_image, ((pad_value + 1, pad_value), (0, 0)),
+                                   mode='constant', constant_values=0)
+            if cut_image.shape[1] < new_side_x:
+                pad_value = int((new_side_x - cut_image.shape[1]) / 2)
+                cut_image = np.pad(cut_image, ((0, 0), (pad_value + 1, pad_value)),
+                                   mode='constant', constant_values=0)
+        if 'sagittal' in directory:
+            cut_image = current_image[lower_z:upper_z, lower_y:upper_y]
+            if cut_image.shape[0] < new_side_z:
+                pad_value = int((new_side_z - cut_image.shape[0]) / 2)
+                cut_image = np.pad(cut_image, ((pad_value + 1, pad_value), (0, 0)),
+                                   mode='constant', constant_values=0)
+            if cut_image.shape[1] < new_side_y:
+                pad_value = int((new_side_y - cut_image.shape[1]) / 2)
+                cut_image = np.pad(cut_image, ((0, 0), (pad_value + 1, pad_value)),
+                                   mode='constant', constant_values=0)
+        logging.debug('Saving image to ' + out_image_path)
+        if cut_image is None:
+            logger.error('Nothing to save - ' + out_image_path)
+        status = cv2.imwrite(filename=out_image_path, img=cut_image)
+        if status is False:
+            logging.error('Error saving image. Path:' + out_image_path
+                          + " - image shape: " + str(cut_image.shape))
 
 
 if __name__ == "__main__":
