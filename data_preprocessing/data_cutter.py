@@ -62,9 +62,12 @@ def __cut(directory):
                         cut_image = np.pad(cut_image, ((0, 0), (pad_value + 1, pad_value)),
                                            mode='constant', constant_values=0)
                 logging.debug('Saving image to ' + out_image_path)
+                if cut_image is None:
+                    logger.error('Nothing to save - ' + out_image_path)
                 status = cv2.imwrite(filename=out_image_path, img=cut_image)
                 if status is False:
-                    logging.error('Error saving image. Path:' + out_image_path + " - image shape: " + cut_image.shape)
+                    logging.error('Error saving image. Path:' + out_image_path
+                                  + " - image shape: " + str(cut_image.shape))
 
 
 if __name__ == "__main__":
