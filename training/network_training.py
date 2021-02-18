@@ -19,13 +19,13 @@ directions = ['axial', 'coronal', 'sagittal']
 batch_size = 32
 epochs = 20
 # data parameter
-samples_from_each_patient = 100
+samples_from_each_patient = 40
 # load data
 for direction in directions:
     print('Start training for direction ' + direction)
     print('Loading train set')
     (x_train, y_train) = dl.get_train_set(direction=direction, samples_from_each_patient=samples_from_each_patient,
-                                          augmentation=False)
+                                          augmentation=True)
     print('Loading validation set')
     (x_val, y_val) = dl.get_validation_set(direction=direction, samples_from_each_patient=samples_from_each_patient)
     print('Loading test set')
