@@ -57,17 +57,16 @@ def pad_to_new_shape(already_cut, new_shape):
         else:
             lower = int(first_sub / 2)
             upper = int(first_sub / 2)
-    already_cut = np.pad(already_cut, ((lower, upper), (0, 0)), mode='constant', constant_values=0)
+        already_cut = np.pad(already_cut, ((lower, upper), (0, 0)), mode='constant', constant_values=0)
     second_sub = new_shape[1] - already_cut.shape[1]
-    lower = 0
-    upper = 0
     if second_sub != 0:
-        lower = int(second_sub / 2) + 1
-        upper = int(second_sub / 2)
-    else:
-        lower = int(second_sub / 2)
-        upper = int(second_sub / 2)
-    already_cut = np.pad(already_cut, ((0, 0), (lower, upper)), mode='constant', constant_values=0)
+        if second_sub % 2 != 0:
+            lower = int(second_sub / 2) + 1
+            upper = int(second_sub / 2)
+        else:
+            lower = int(second_sub / 2)
+            upper = int(second_sub / 2)
+        already_cut = np.pad(already_cut, ((0, 0), (lower, upper)), mode='constant', constant_values=0)
     return already_cut
 
 

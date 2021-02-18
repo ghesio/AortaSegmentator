@@ -34,47 +34,47 @@ test_size = 4
 
 
 def read_image_information_in_directory(directory):
-	for __root, __dirs, __files in os.walk(directory):
-		if __files:
-			# used to get the first and last informative slice
-			bound = [None, None]
-			# used to get the non background pixel coordinate in both direction, min and max
-			min_info = [9999, 9999]
-			max_info = [-1, -1]
-			for i in range(len(__files) - 1):
-				current_image_path = __root + '/' + __files[i]
-				next_image_path = __root + '/' + __files[i + 1]
-				# read the image into a numpy array
-				current_image = np.array(imageio.imread(uri=current_image_path), dtype='uint8')
-				next_image = np.array(imageio.imread(uri=next_image_path), dtype='uint8')
-				background_color = current_image[0, 0]
-				# a slice is informative if it's not only background
-				if not np.all(current_image == background_color):
-					if bound[0] is None:
-						bound[0] = i + 1
-					if not np.all(current_image == background_color) and np.all(next_image == background_color):
-						bound[1] = i + 1
-					for j in range(current_image.shape[0]):
-						for k in range(current_image.shape[1]):
-							pixel = current_image[j][k]
-							if pixel != background_color:
-								if j < min_info[0]:
-									min_info[0] = j
-								if k < min_info[1]:
-									min_info[1] = k
-								if j > max_info[0]:
-									max_info[0] = j
-								if k > max_info[1]:
-									max_info[1] = k
-			if bound[1] is None:
-				bound[1] = len(__files) + 1
-			return bound, min_info, max_info
+	__files = [x for x in os.listdir(directory) if '.png' in x]
+	__files.sort()
+	# used to get the first and last informative slice
+	bound = [None, None]
+	# used to get the non background pixel coordinate in both direction, min and max
+	min_info = [9999, 9999]
+	max_info = [-1, -1]
+	for i in range(len(__files) - 1):
+		current_image_path = directory + '/' + __files[i]
+		next_image_path = directory + '/' + __files[i + 1]
+		# read the image into a numpy array
+		current_image = np.array(imageio.imread(uri=current_image_path), dtype='uint8')
+		next_image = np.array(imageio.imread(uri=next_image_path), dtype='uint8')
+		background_color = current_image[0, 0]
+		# a slice is informative if it's not only background
+		if not np.all(current_image == background_color):
+			if bound[0] is None:
+				bound[0] = i + 1
+			if not np.all(current_image == background_color) and np.all(next_image == background_color):
+				bound[1] = i + 1
+			for j in range(current_image.shape[0]):
+				for k in range(current_image.shape[1]):
+					pixel = current_image[j][k]
+					if pixel != background_color:
+						if j < min_info[0]:
+							min_info[0] = j
+						if k < min_info[1]:
+							min_info[1] = k
+						if j > max_info[0]:
+							max_info[0] = j
+						if k > max_info[1]:
+							max_info[1] = k
+	if bound[1] is None:
+		bound[1] = len(__files) + 1
+	return bound, min_info, max_info
 
 
 if __name__ == "__main__":
 	# read all directory in '...data/out'
 	dir_names = []
-	for root, dirs, files in os.walk('../data/out'):
+	for root, dirs, files in os.walk('data/out'):
 		if not dirs:
 			dir_names += [os.path.abspath(root)]
 	patient_map = {}
@@ -126,6 +126,6 @@ if __name__ == "__main__":
 				patient_map[patient]['partition'] = 'test'
 		counter = counter + 1
 	logging.info("Writing JSON info file")
-	with open('../data/info.json', 'w') as outfile:
+	with open('data/info.json', 'w') as outfile:
 		json.dump(patient_map, outfile, indent=4)
 	exit(0)
