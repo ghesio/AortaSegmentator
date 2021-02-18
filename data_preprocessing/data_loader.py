@@ -40,8 +40,11 @@ def get_train_set(direction, samples_from_each_patient=20, normalization=True, a
         # get min and max informative slice indexes
         min_slice_index = patient_map[patient][direction]['min_slice']
         max_slice_index = patient_map[patient][direction]['max_slice']
+        # ??????
+        if max_slice_index == min_slice_index:
+            drawn_indexes = [min_slice_index]
         # draw random samples or all slices
-        if samples_from_each_patient == 0:
+        elif samples_from_each_patient == 0:
             drawn_indexes = np.arange(min_slice_index, max_slice_index - 1)
         else:
             drawn_indexes = np.random.randint(min_slice_index, max_slice_index - 1, samples_from_each_patient)
@@ -89,9 +92,9 @@ def get_train_set(direction, samples_from_each_patient=20, normalization=True, a
                     roi_array.append(current_roi)
     if normalization:
         # a simple min-max scaling with predefined range (due to int_8 files)
-        for i in range(len(scan_array)):
-            scan_array[i] = scan_array[i] / 255
-            roi_array[i] = roi_array[i] / 255
+        for j in range(len(scan_array)):
+            scan_array[j] = scan_array[j] / 255
+            roi_array[j] = roi_array[j] / 255
     # return train set
     shuffled = shuffle(np.array(scan_array, dtype='float32'), np.array(roi_array, dtype='float32'), random_state=42)
     return shuffled[0], shuffled[1]

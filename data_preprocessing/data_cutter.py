@@ -1,6 +1,6 @@
 import json
 import math
-import os
+import os, shutil
 import numpy as np
 # LOGGING
 from utils import custom_logger
@@ -11,6 +11,7 @@ import imageio
 
 def __cut(directory):
     dir_files = [x for x in os.listdir(directory) if '.png' in x]
+    dir_files.sort()
     for j in range(len(dir_files)):
         current_image_path = directory + '/' + dir_files[j]
         if 'roi' in _dir:
@@ -34,32 +35,56 @@ def __cut(directory):
             cut_image = current_image[lower_y:upper_y, lower_x:upper_x]
             if cut_image.shape[0] < new_side_y:
                 pad_value = int((new_side_y - cut_image.shape[0]) / 2)
-                cut_image = np.pad(cut_image, ((pad_value + 1, pad_value), (0, 0)),
-                                   mode='constant', constant_values=0)
+                if pad_value % 2 == 0:
+                    cut_image = np.pad(cut_image, ((pad_value, pad_value), (0, 0)),
+                                       mode='constant', constant_values=0)
+                else:
+                    cut_image = np.pad(cut_image, ((pad_value + 1, pad_value), (0, 0)),
+                                       mode='constant', constant_values=0)
             if cut_image.shape[1] < new_side_x:
                 pad_value = int((new_side_x - cut_image.shape[1]) / 2)
-                cut_image = np.pad(cut_image, ((0, 0), (pad_value + 1, pad_value)),
-                                   mode='constant', constant_values=0)
+                if pad_value % 2 == 0:
+                    cut_image = np.pad(cut_image, ((0, 0), (pad_value, pad_value)),
+                                    mode='constant', constant_values=0)
+                else:
+                    cut_image = np.pad(cut_image, ((0, 0), (pad_value + 1, pad_value)),
+                                      mode='constant', constant_values=0)
         if 'coronal' in directory:
             cut_image = current_image[lower_z:upper_z, lower_x:upper_x]
             if cut_image.shape[0] < new_side_z:
                 pad_value = int((new_side_z - cut_image.shape[0]) / 2)
-                cut_image = np.pad(cut_image, ((pad_value + 1, pad_value), (0, 0)),
-                                   mode='constant', constant_values=0)
+                if pad_value % 2 == 0:
+                    cut_image = np.pad(cut_image, ((pad_value, pad_value), (0, 0)),
+                                       mode='constant', constant_values=0)
+                else:
+                    cut_image = np.pad(cut_image, ((pad_value + 1, pad_value), (0, 0)),
+                                       mode='constant', constant_values=0)
             if cut_image.shape[1] < new_side_x:
                 pad_value = int((new_side_x - cut_image.shape[1]) / 2)
-                cut_image = np.pad(cut_image, ((0, 0), (pad_value + 1, pad_value)),
-                                   mode='constant', constant_values=0)
+                if pad_value % 2 == 0:
+                    cut_image = np.pad(cut_image, ((0, 0), (pad_value, pad_value)),
+                                       mode='constant', constant_values=0)
+                else:
+                    cut_image = np.pad(cut_image, ((0, 0), (pad_value + 1, pad_value)),
+                                       mode='constant', constant_values=0)
         if 'sagittal' in directory:
             cut_image = current_image[lower_z:upper_z, lower_y:upper_y]
             if cut_image.shape[0] < new_side_z:
                 pad_value = int((new_side_z - cut_image.shape[0]) / 2)
-                cut_image = np.pad(cut_image, ((pad_value + 1, pad_value), (0, 0)),
-                                   mode='constant', constant_values=0)
+                if pad_value % 2 == 0:
+                    cut_image = np.pad(cut_image, ((pad_value, pad_value), (0, 0)),
+                                       mode='constant', constant_values=0)
+                else:
+                    cut_image = np.pad(cut_image, ((pad_value + 1, pad_value), (0, 0)),
+                                       mode='constant', constant_values=0)
             if cut_image.shape[1] < new_side_y:
                 pad_value = int((new_side_y - cut_image.shape[1]) / 2)
-                cut_image = np.pad(cut_image, ((0, 0), (pad_value + 1, pad_value)),
-                                   mode='constant', constant_values=0)
+                if pad_value % 2 == 0:
+                    cut_image = np.pad(cut_image, ((0, 0), (pad_value, pad_value)),
+                                       mode='constant', constant_values=0)
+                else:
+                    cut_image = np.pad(cut_image, ((0, 0), (pad_value + 1, pad_value)),
+                                       mode='constant', constant_values=0)
         logging.debug('Saving image to ' + out_image_path)
         if cut_image is None:
             logger.error('Nothing to save - ' + out_image_path)
@@ -70,10 +95,14 @@ def __cut(directory):
 
 
 if __name__ == "__main__":
-    # dry run flag
-    dry_run = False
+    # flags
+    just_check = False
+    overwrite = True
+    # data dirs
+    info_path = 'data/info.json'
+    data_out_path = 'data/out/'
     # read JSON containing information
-    with open('data/info.json') as f:
+    with open(info_path) as f:
         patient_map = json.load(f)
     # initialize minima and maxima variables
     min_x = 99999
@@ -98,9 +127,13 @@ if __name__ == "__main__":
             max_z = patient_map[patient]['coordinates']['max_z']
         patient_map[patient]['roi_cut_dir'] = patient_map[patient]['roi_dir'].replace('roi', 'roi_cut')
         patient_map[patient]['scan_cut_dir'] = patient_map[patient]['scan_dir'].replace('scan', 'scan_cut')
-
+        if overwrite:
+            if os.path.isdir(patient_map[patient]['roi_cut_dir']):
+                shutil.rmtree(patient_map[patient]['roi_cut_dir'])
+            if os.path.isdir(patient_map[patient]['scan_cut_dir']):
+                shutil.rmtree(patient_map[patient]['scan_cut_dir'])
     logging.info("Updating JSON info file")
-    with open('data/info.json', 'w') as outfile:
+    with open(info_path, 'w') as outfile:
         json.dump(patient_map, outfile, indent=4)
 
     logging.info("Buonding box location (before padding) (x,y,z): (" + str(min_x) + "-" + str(max_x) + ") x (" +
@@ -144,16 +177,56 @@ if __name__ == "__main__":
             new_side_x / 2)) + ") x (" + str(int(center_y - new_side_y / 2)) + "-" + str(int(center_y +
             new_side_y / 2)) + ") x (" + str(int(center_z - new_side_z / 2)) + "-" + str(int(center_z +
             new_side_z / 2)) + ")")
-    if dry_run:
-        exit(1)
     # iterate through directories
-    dir_names = []
-    for root, dirs, files in os.walk('data/out'):
-        if not dirs:
-            dir_names += [os.path.abspath(root)]
+    dir_names = [x[0] for x in os.walk(data_out_path) if ('axial' in x[0] or 'coronal' in x[0] or 'sagittal' in x[0])
+                 and 'cut' not in x[0]]
+    dir_names.sort()
     for _dir in dir_names:
-        if 'cut' in _dir:
-            continue
         logging.info('Processing ' + _dir)
-        __cut(_dir)
+        if not just_check:
+            __cut(_dir)
+    # check integrity: for each original slice there must be a cut slice
+    for patient in patient_map:
+        # roi
+        roi_cut_dir = patient_map[patient]['roi_cut_dir']
+        roi_dir = patient_map[patient]['roi_dir']
+        # axial
+        roi_files = [x for x in os.listdir(roi_dir + '/axial/') if '.png' in x]
+        roi_cut_files = [x for x in os.listdir(roi_cut_dir + '/axial/') if '.png' in x]
+        difference = [x for x in roi_cut_files if x not in set(roi_files)]
+        if difference:
+            logging.error('Missing slices in directory ' + roi_cut_dir)
+        # coronal
+        roi_files = [x for x in os.listdir(roi_dir + '/coronal/') if '.png' in x]
+        roi_cut_files = [x for x in os.listdir(roi_cut_dir + '/coronal/') if '.png' in x]
+        difference = [x for x in roi_cut_files if x not in set(roi_files)]
+        if difference:
+            logging.error('Missing slices in directory ' + roi_cut_dir)
+        # axial
+        roi_files = [x for x in os.listdir(roi_dir + '/sagittal/') if '.png' in x]
+        roi_cut_files = [x for x in os.listdir(roi_cut_dir + '/sagittal/') if '.png' in x]
+        difference = [x for x in roi_cut_files if x not in set(roi_files)]
+        if difference:
+            logging.error('Missing slices in directory ' + roi_cut_dir)
+        # scan
+        scan_cut_dir = patient_map[patient]['roi_cut_dir']
+        scan_dir = patient_map[patient]['roi_dir']
+        # axial
+        scan_files = [x for x in os.listdir(scan_dir + '/axial/') if '.png' in x]
+        scan_cut_files = [x for x in os.listdir(scan_cut_dir + '/axial/') if '.png' in x]
+        difference = [x for x in scan_cut_files if x not in set(scan_files)]
+        if difference:
+            logging.error('Missing slices in directory ' + scan_cut_dir)
+        # coronal
+        scan_files = [x for x in os.listdir(scan_dir + '/coronal/') if '.png' in x]
+        scan_cut_files = [x for x in os.listdir(scan_cut_dir + '/coronal/') if '.png' in x]
+        difference = [x for x in scan_cut_files if x not in set(scan_files)]
+        if difference:
+            logging.error('Missing slices in directory ' + scan_cut_dir)
+        # axial
+        scan_files = [x for x in os.listdir(scan_dir + '/sagittal/') if '.png' in x]
+        scan_cut_files = [x for x in os.listdir(scan_cut_dir + '/sagittal/') if '.png' in x]
+        difference = [x for x in scan_cut_files if x not in set(scan_files)]
+        if difference:
+            logging.error('Missing slices in directory ' + scan_cut_dir)
     exit(0)
