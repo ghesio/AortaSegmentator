@@ -74,7 +74,7 @@ def read_image_information_in_directory(directory):
 if __name__ == "__main__":
 	# read all directory in '...data/out'
 	dir_names = []
-	for root, dirs, files in os.walk('data/out'):
+	for root, dirs, files in os.walk('../data/out'):
 		if not dirs:
 			dir_names += [os.path.abspath(root)]
 	patient_map = {}
@@ -126,6 +126,6 @@ if __name__ == "__main__":
 				patient_map[patient]['partition'] = 'test'
 		counter = counter + 1
 	logging.info("Writing JSON info file")
-	with open('data/info.json', 'w') as outfile:
+	with open('../data/info.json', 'w') as outfile:
 		json.dump(patient_map, outfile, indent=4)
 	exit(0)

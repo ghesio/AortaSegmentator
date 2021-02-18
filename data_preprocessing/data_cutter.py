@@ -24,67 +24,17 @@ def __cut(directory):
         # read the image into a numpy array
         current_image = np.array(imageio.imread(uri=current_image_path), dtype='uint8')
         cut_image = None
-        lower_y = center_y - int(new_side_y / 2)
-        upper_y = center_y + int(new_side_y / 2)
-        lower_x = center_x - int(new_side_x / 2)
-        upper_x = center_x + int(new_side_x / 2)
-        lower_z = center_z - int(new_side_z / 2)
-        upper_z = center_z + int(new_side_z / 2)
-
         if 'axial' in directory:
             cut_image = current_image[lower_y:upper_y, lower_x:upper_x]
-            if cut_image.shape[0] < new_side_y:
-                pad_value = int((new_side_y - cut_image.shape[0]) / 2)
-                if pad_value % 2 == 0:
-                    cut_image = np.pad(cut_image, ((pad_value, pad_value), (0, 0)),
-                                       mode='constant', constant_values=0)
-                else:
-                    cut_image = np.pad(cut_image, ((pad_value + 1, pad_value), (0, 0)),
-                                       mode='constant', constant_values=0)
-            if cut_image.shape[1] < new_side_x:
-                pad_value = int((new_side_x - cut_image.shape[1]) / 2)
-                if pad_value % 2 == 0:
-                    cut_image = np.pad(cut_image, ((0, 0), (pad_value, pad_value)),
-                                    mode='constant', constant_values=0)
-                else:
-                    cut_image = np.pad(cut_image, ((0, 0), (pad_value + 1, pad_value)),
-                                      mode='constant', constant_values=0)
-        if 'coronal' in directory:
+            cut_image = pad_to_new_shape(cut_image, (new_side_y, new_side_x))
+        elif 'coronal' in directory:
+            pass  # ? the instruction below elif is skipped ?
             cut_image = current_image[lower_z:upper_z, lower_x:upper_x]
-            if cut_image.shape[0] < new_side_z:
-                pad_value = int((new_side_z - cut_image.shape[0]) / 2)
-                if pad_value % 2 == 0:
-                    cut_image = np.pad(cut_image, ((pad_value, pad_value), (0, 0)),
-                                       mode='constant', constant_values=0)
-                else:
-                    cut_image = np.pad(cut_image, ((pad_value + 1, pad_value), (0, 0)),
-                                       mode='constant', constant_values=0)
-            if cut_image.shape[1] < new_side_x:
-                pad_value = int((new_side_x - cut_image.shape[1]) / 2)
-                if pad_value % 2 == 0:
-                    cut_image = np.pad(cut_image, ((0, 0), (pad_value, pad_value)),
-                                       mode='constant', constant_values=0)
-                else:
-                    cut_image = np.pad(cut_image, ((0, 0), (pad_value + 1, pad_value)),
-                                       mode='constant', constant_values=0)
-        if 'sagittal' in directory:
+            cut_image = pad_to_new_shape(cut_image, (new_side_z, new_side_x))
+        elif 'sagittal' in directory:
+            pass  # ? the instruction below elif is skipped ?
             cut_image = current_image[lower_z:upper_z, lower_y:upper_y]
-            if cut_image.shape[0] < new_side_z:
-                pad_value = int((new_side_z - cut_image.shape[0]) / 2)
-                if pad_value % 2 == 0:
-                    cut_image = np.pad(cut_image, ((pad_value, pad_value), (0, 0)),
-                                       mode='constant', constant_values=0)
-                else:
-                    cut_image = np.pad(cut_image, ((pad_value + 1, pad_value), (0, 0)),
-                                       mode='constant', constant_values=0)
-            if cut_image.shape[1] < new_side_y:
-                pad_value = int((new_side_y - cut_image.shape[1]) / 2)
-                if pad_value % 2 == 0:
-                    cut_image = np.pad(cut_image, ((0, 0), (pad_value, pad_value)),
-                                       mode='constant', constant_values=0)
-                else:
-                    cut_image = np.pad(cut_image, ((0, 0), (pad_value + 1, pad_value)),
-                                       mode='constant', constant_values=0)
+            cut_image = pad_to_new_shape(cut_image, (new_side_z, new_side_y))
         logging.debug('Saving image to ' + out_image_path)
         if cut_image is None:
             logger.error('Nothing to save - ' + out_image_path)
@@ -92,6 +42,33 @@ def __cut(directory):
         if status is False:
             logging.error('Error saving image. Path:' + out_image_path
                           + " - image shape: " + str(cut_image.shape))
+
+
+def pad_to_new_shape(already_cut, new_shape):
+    # first axis
+    first_sub = new_shape[0] - already_cut.shape[0]
+    lower = 0
+    upper = 0
+    if first_sub != 0:
+        # need to pad
+        if first_sub % 2 != 0:
+            lower = int(first_sub / 2) + 1
+            upper = int(first_sub / 2)
+        else:
+            lower = int(first_sub / 2)
+            upper = int(first_sub / 2)
+    already_cut = np.pad(already_cut, ((lower, upper), (0, 0)), mode='constant', constant_values=0)
+    second_sub = new_shape[1] - already_cut.shape[1]
+    lower = 0
+    upper = 0
+    if second_sub != 0:
+        lower = int(second_sub / 2) + 1
+        upper = int(second_sub / 2)
+    else:
+        lower = int(second_sub / 2)
+        upper = int(second_sub / 2)
+    already_cut = np.pad(already_cut, ((0, 0), (lower, upper)), mode='constant', constant_values=0)
+    return already_cut
 
 
 if __name__ == "__main__":
@@ -181,6 +158,12 @@ if __name__ == "__main__":
     dir_names = [x[0] for x in os.walk(data_out_path) if ('axial' in x[0] or 'coronal' in x[0] or 'sagittal' in x[0])
                  and 'cut' not in x[0]]
     dir_names.sort()
+    lower_y = center_y - int(new_side_y / 2)
+    upper_y = center_y + int(new_side_y / 2)
+    lower_x = center_x - int(new_side_x / 2)
+    upper_x = center_x + int(new_side_x / 2)
+    lower_z = center_z - int(new_side_z / 2)
+    upper_z = center_z + int(new_side_z / 2)
     for _dir in dir_names:
         logging.info('Processing ' + _dir)
         if not just_check:

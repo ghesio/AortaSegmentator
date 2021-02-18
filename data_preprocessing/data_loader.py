@@ -35,6 +35,7 @@ def get_train_set(direction, samples_from_each_patient=20, normalization=True, a
         if patient_map[patient]['partition'] != 'train':
             continue
         # get location of cut slices (both scan and roi)
+        print('Loading ' + patient)
         scan_cut_dir = patient_map[patient]['scan_cut_dir'] + '/' + direction
         roi_cut_dir = patient_map[patient]['roi_cut_dir'] + '/' + direction
         # get min and max informative slice indexes
@@ -119,6 +120,7 @@ def get_test_set(direction, samples_from_each_patient=0, normalization=True):
     for patient in patient_map:
         if patient_map[patient]['partition'] != 'test':
             continue
+        print('Loading ' + patient)
         # get location of cut slices (both scan and roi)
         scan_cut_dir = patient_map[patient]['scan_cut_dir'] + '/' + direction
         roi_cut_dir = patient_map[patient]['roi_cut_dir'] + '/' + direction
@@ -184,6 +186,7 @@ def get_validation_set(direction, samples_from_each_patient=0, normalization=Tru
     for patient in patient_map:
         if patient_map[patient]['partition'] != 'validation':
             continue
+        print('Loading ' + patient)
         # get location of cut slices (both scan and roi)
         scan_cut_dir = patient_map[patient]['scan_cut_dir'] + '/' + direction
         roi_cut_dir = patient_map[patient]['roi_cut_dir'] + '/' + direction
