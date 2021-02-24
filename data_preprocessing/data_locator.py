@@ -32,6 +32,11 @@ import logging
 validation_size = 4
 test_size = 4
 
+# global
+separator = '\\' # \\ windows, / unix
+data_out_dir = '../data/out'
+info_json = '../data/info.json'
+
 
 def read_image_information_in_directory(directory):
 	__files = [x for x in os.listdir(directory) if '.png' in x]
@@ -74,12 +79,12 @@ def read_image_information_in_directory(directory):
 if __name__ == "__main__":
 	# read all directory in '...data/out'
 	dir_names = []
-	for root, dirs, files in os.walk('data/out'):
+	for root, dirs, files in os.walk(data_out_dir):
 		if not dirs:
 			dir_names += [os.path.abspath(root)]
 	patient_map = {}
 	for _dir in dir_names:
-		patient_id = re.sub(r'^.*?data/out/', '', _dir).split("/", 1)[0]
+		patient_id = re.sub(r'^.*?data' + re.escape(separator) + 'out' + re.escape(separator), '', _dir).split(separator, 1)[0]
 		if patient_id not in patient_map:
 			patient_map[patient_id] = {}
 			patient_map[patient_id]['coordinates'] = {}
@@ -88,7 +93,7 @@ if __name__ == "__main__":
 			continue
 		if 'roi' in _dir:
 			# get information about informative images in 'roi' dir
-			patient_map[patient_id]['roi_dir'] = remove_everything_after_last(_dir)
+			patient_map[patient_id]['roi_dir'] = remove_everything_after_last(_dir, separator)
 			logging.info('Opening directory ' + _dir)
 			info = read_image_information_in_directory(_dir)
 			if 'axial' in _dir:
@@ -112,7 +117,7 @@ if __name__ == "__main__":
 				patient_map[patient_id]['sagittal']['min_slice'] = info[0][0]
 				patient_map[patient_id]['sagittal']['max_slice'] = info[0][1]
 		else:
-			patient_map[patient_id]['scan_dir'] = remove_everything_after_last(_dir)
+			patient_map[patient_id]['scan_dir'] = remove_everything_after_last(_dir, separator)
 	# define to which set of data the patients belongs to (train, validation, test)
 	total_patients = len(patient_map.keys())
 	counter = 0
@@ -126,6 +131,6 @@ if __name__ == "__main__":
 				patient_map[patient]['partition'] = 'test'
 		counter = counter + 1
 	logging.info("Writing JSON info file")
-	with open('data/info.json', 'w') as outfile:
+	with open(info_json, 'w') as outfile:
 		json.dump(patient_map, outfile, indent=4)
 	exit(0)
