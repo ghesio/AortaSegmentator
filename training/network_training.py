@@ -1,47 +1,103 @@
 import os
+
 # see https://github.com/qubvel/segmentation_models/issues/374
 os.environ['SM_FRAMEWORK'] = 'tf.keras'
 # https://github.com/qubvel/segmentation_models
 import segmentation_models as sm
 from keras.layers import Input, Conv2D
-import data_preprocessing.data_loader as dl
 from keras.models import Model
 from keras.callbacks import ModelCheckpoint
 import tensorflow as tf
 from datetime import datetime
 from utils.network_utils import get_model, backbone
+from keras.preprocessing.image import ImageDataGenerator
+import imageio
+import numpy as np
 
 # dry run flag
-dry_run = True
+dry_run = False
+separator = "\\"
 # define which network to train
-directions = ['axial', 'coronal', 'sagittal']
+directions = ['axial']  # , 'coronal', 'sagittal']
 # network parameter
-batch_size = 32
+batch_size = 1
 epochs = 20
-# data parameter
-samples_from_each_patient = 40
-# load data
+
+
+def zip_generator(image_data_generator, mask_data_generator):
+    zipped_generator = zip(image_data_generator, mask_data_generator)
+    for (img, mask) in zipped_generator:
+        yield img[0], mask[0]
+
+
 for direction in directions:
-    print('Start training for direction ' + direction)
-    print('Loading train set')
-    (x_train, y_train) = dl.get_train_set(direction=direction, samples_from_each_patient=samples_from_each_patient,
-                                          augmentation=True)
-    print('Loading validation set')
-    (x_val, y_val) = dl.get_validation_set(direction=direction, samples_from_each_patient=samples_from_each_patient)
-    print('Loading test set')
-    (x_test, y_test) = dl.get_test_set(direction=direction, samples_from_each_patient=samples_from_each_patient)
-    print('Shapes: (train) ' + str(x_train.shape) + ' - (validation) ' + str(x_val.shape) + ' - (test) '
-          + str(x_test.shape))
+    print('Start training for direction ' + direction + ' @ ' + datetime.now().strftime("%H:%M:%S"))
+    train_scans_dir = '../data/slices/train/' + direction + separator
+    train_labels_dir = '../data/slices/train/' + direction + separator
+    validation_scans_dir = '../data/slices/validation/' + direction
+    validation_labels_dir = '../data/slices/validation/' + direction
+    test_scans_dir = '../data/slices/test/' + direction
+    test_labels_dir = '../data/slices/test/' + direction
+    data_shape = np.array(imageio.imread(uri=train_scans_dir + 'scans' + separator + direction + '_00000000.png'),
+                          dtype='uint8').shape
+    # instantiate data generators
+    data_gen_args = dict(
+        rotation_range=5,
+        width_shift_range=5,
+        height_shift_range=5,
+        zoom_range=[0.8, 1.3],
+        rescale=1. / 255
+    )
+    # TRAIN SET
+    train_scan_generator = ImageDataGenerator(data_gen_args).flow_from_directory(train_scans_dir,
+                                                                                 batch_size=batch_size,
+                                                                                 seed=42,
+                                                                                 color_mode='grayscale',
+                                                                                 target_size=data_shape,
+                                                                                 classes=['scans'])
+    train_mask_generator = ImageDataGenerator(data_gen_args).flow_from_directory(train_labels_dir,
+                                                                                 batch_size=batch_size,
+                                                                                 seed=42,
+                                                                                 color_mode='grayscale',
+                                                                                 target_size=data_shape,
+                                                                                 classes=['labels'])
+    train_generator = zip_generator(train_scan_generator, train_mask_generator)
+    # VALIDATION
+    validation_scan_generator = ImageDataGenerator(rescale=1. / 255).flow_from_directory(validation_scans_dir,
+                                                                                         shuffle=False,
+                                                                                         batch_size=batch_size,
+                                                                                         color_mode='grayscale',
+                                                                                         target_size=data_shape,
+                                                                                         classes=['scans'])
+    validation_label_generator = ImageDataGenerator(rescale=1. / 255).flow_from_directory(validation_labels_dir,
+                                                                                          shuffle=False,
+                                                                                          batch_size=batch_size,
+                                                                                          color_mode='grayscale',
+                                                                                          target_size=data_shape,
+                                                                                          classes=['labels'])
+    validation_generator = zip_generator(validation_scan_generator, validation_label_generator)
+    # TEST
+    test_scan_generator = ImageDataGenerator(rescale=1. / 255).flow_from_directory(test_scans_dir,
+                                                                                   shuffle=False,
+                                                                                   batch_size=batch_size,
+                                                                                   color_mode='grayscale',
+                                                                                   target_size=data_shape,
+                                                                                   classes=['scans'])
+    test_label_generator = ImageDataGenerator(rescale=1. / 255).flow_from_directory(test_labels_dir,
+                                                                                    shuffle=False,
+                                                                                    batch_size=batch_size,
+                                                                                    color_mode='grayscale',
+                                                                                    target_size=data_shape,
+                                                                                    classes=['labels'])
+    test_generator = zip_generator(test_scan_generator, test_label_generator)
     if dry_run:
         continue
-    # add channel info to train set
-    x_train = tf.expand_dims(x_train, axis=-1)
     # get model
-    model = get_model(x_train.shape[-1])
+    model = get_model()
     # define callbacks
     # a) save checkpoints
     save_callback = tf.keras.callbacks.ModelCheckpoint(
-        filepath='checkpoints/' + direction + '_' + str(samples_from_each_patient) + '_'
+        filepath='checkpoints/' + direction + '_'
                  + backbone + '-{epoch:02d}-{val_loss:.2f}.hdf5',
         save_weights_only=False,
         monitor='val_loss',
@@ -50,20 +106,18 @@ for direction in directions:
     # b) early stopping criteria
     early_stopping_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', patience=3)
     # fit the model
-    print('Training start @', datetime.now().strftime("%H:%M:%S"), '-', direction)
+    print('Training start @ ', datetime.now().strftime("%H:%M:%S"), ' - ', direction)
     history = model.fit(
-       x=x_train,
-       y=y_train,
-       batch_size=batch_size,
-       epochs=epochs,
-       validation_data=(x_val, y_val),
-       callbacks=[save_callback, early_stopping_callback]
+        train_generator,
+        epochs=epochs,
+        validation_data=validation_generator,
+        callbacks=[save_callback, early_stopping_callback]
     )
     print("Training end @ ", datetime.now().strftime("%H:%M:%S"))
     print("\r\nTraining results")
     for key in history.history.keys():
-        print('\t' + key+':', history.history[key])
+        print('\t' + key + ':', history.history[key])
     print("\r\nTest evaluation")
-    results = model.evaluate(x_test, y_test, batch_size=16)
+    results = model.evaluate(test_generator, batch_size=batch_size)
     print('\tLoss:', results[0], 'Accuracy:', results[1])
 exit(0)
