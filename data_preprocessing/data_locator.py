@@ -17,16 +17,17 @@ JSON format:
 
 """
 
+import json
+# LOGGING
+import logging
+from utils import custom_logger
 import os
 import re
+
 import imageio
 import numpy as np
-import logging
-import json
+
 from utils.misc import remove_everything_after_last
-# LOGGING
-from utils import custom_logger
-import logging
 
 # define validation and test size
 validation_size = 4

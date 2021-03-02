@@ -1,12 +1,12 @@
 import json
-import math
-import os, shutil
-import numpy as np
 # LOGGING
-from utils import custom_logger
 import logging
+from utils import custom_logger
+import math
+import os
 import cv2
 import imageio
+import numpy as np
 
 # data dirs
 info_path = 'data/info.json'
@@ -86,7 +86,7 @@ def pad_to_new_shape(already_cut, new_shape):
 
 
 if __name__ == "__main__":
-    # flags
+
     just_check = False
     overwrite = True
     # read JSON containing information
@@ -124,9 +124,6 @@ if __name__ == "__main__":
     center_z = math.ceil((max_z + min_z) / 2)
     logging.info('Buonding box center: (x,y,z) ' + str(center_x) + 'x' + str(center_y) + 'x' + str(center_z))
     i = 1
-    new_side_x = None
-    new_side_y = None
-    new_side_z = None
     while True:
         if side_x < 32 * i:
             new_side_x = int(32 * i)

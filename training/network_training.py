@@ -2,12 +2,8 @@ import os
 
 # see https://github.com/qubvel/segmentation_models/issues/374
 os.environ['SM_FRAMEWORK'] = 'tf.keras'
-os.environ["CUDA_VISIBLE_DEVICES"]="1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 # https://github.com/qubvel/segmentation_models
-import segmentation_models as sm
-from keras.layers import Input, Conv2D
-from keras.models import Model
-from keras.callbacks import ModelCheckpoint
 import tensorflow as tf
 from datetime import datetime
 from utils.network_utils import get_model, backbone
