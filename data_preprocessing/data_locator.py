@@ -33,9 +33,9 @@ validation_size = 4
 test_size = 4
 
 # global
-separator = '\\' # \\ windows, / unix
-data_out_dir = '../data/out'
-info_json = '../data/info.json'
+separator = '/' # \\ windows, / unix
+data_out_dir = 'data/out'
+info_json = 'data/info.json'
 
 
 def read_image_information_in_directory(directory):
