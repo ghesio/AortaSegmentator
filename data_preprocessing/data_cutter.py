@@ -92,30 +92,28 @@ if __name__ == "__main__":
     # read JSON containing information
     with open(info_path) as f:
         patient_map = json.load(f)
-    # initialize minima and maxima variables
-    min_x = 99999
-    max_x = -99999
-    min_y = 99999
-    max_y = -99999
-    min_z = 99999
-    max_z = -99999
     # iterate through every patient and get bounding box vertexes
+    x_coordinates_min = []
+    x_coordinates_max = []
+    y_coordinates_min = []
+    y_coordinates_max = []
+    z_coordinates_min = []
+    z_coordinates_max = []
     for patient in patient_map:
-        if patient_map[patient]['coordinates']['min_y'] < min_y:
-            min_y = patient_map[patient]['coordinates']['min_y']
-        if patient_map[patient]['coordinates']['max_y'] > max_y:
-            max_y = patient_map[patient]['coordinates']['max_y']
-        if patient_map[patient]['coordinates']['min_x'] < min_x:
-            min_x = patient_map[patient]['coordinates']['min_x']
-        if patient_map[patient]['coordinates']['max_x'] > max_x:
-            max_x = patient_map[patient]['coordinates']['max_x']
-        if patient_map[patient]['coordinates']['min_z'] < min_z:
-            min_z = patient_map[patient]['coordinates']['min_z']
-        if patient_map[patient]['coordinates']['max_z'] > max_z:
-            max_z = patient_map[patient]['coordinates']['max_z']
+        x_coordinates_min.append(patient_map[patient]['coordinates']['min_x'])
+        x_coordinates_max.append(patient_map[patient]['coordinates']['max_x'])
+        y_coordinates_min.append(patient_map[patient]['coordinates']['min_y'])
+        y_coordinates_max.append(patient_map[patient]['coordinates']['max_y'])
+        z_coordinates_min.append(patient_map[patient]['coordinates']['min_z'])
+        z_coordinates_max.append(patient_map[patient]['coordinates']['max_z'])
+    min_x = min(x_coordinates_min)
+    max_x = max(x_coordinates_max)
+    min_y = min(y_coordinates_min)
+    max_y = max(y_coordinates_max)
+    min_z = min(z_coordinates_min)
+    max_z = max(z_coordinates_max)
     logging.info("Buonding box location (before padding) (x,y,z): (" + str(min_x) + "-" + str(max_x) + ") x (" +
                  str(min_y) + "-" + str(max_y) + ") x (" + str(min_z) + "-" + str(max_z) + ")")
-
     # get max side value to pad to 32px multiple
     side_x = max_x - min_x
     side_y = max_y - min_y
