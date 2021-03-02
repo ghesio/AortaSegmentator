@@ -9,10 +9,10 @@ import cv2
 import imageio
 
 # data dirs
-info_path = '../data/info.json'
-data_out_path = '../data/slices/'
+info_path = 'data/info.json'
+data_out_path = 'data/slices/'
 directions = ['axial', 'coronal', 'sagittal']
-separator = "\\"
+separator = "/"
 
 
 def cut(directory, direction, partition, min_index, max_index):

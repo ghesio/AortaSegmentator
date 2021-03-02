@@ -2,6 +2,7 @@ import os
 
 # see https://github.com/qubvel/segmentation_models/issues/374
 os.environ['SM_FRAMEWORK'] = 'tf.keras'
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 # https://github.com/qubvel/segmentation_models
 import segmentation_models as sm
 from keras.layers import Input, Conv2D
@@ -16,11 +17,11 @@ import numpy as np
 
 # dry run flag
 dry_run = False
-separator = "\\"
+separator = "/"
 # define which network to train
 directions = ['axial']  # , 'coronal', 'sagittal']
 # network parameter
-batch_size = 1
+batch_size = 32
 epochs = 20
 
 
