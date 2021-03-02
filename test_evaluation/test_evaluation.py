@@ -1,5 +1,4 @@
 import json
-from data_preprocessing.data_loader import get_test_set_directories
 from utils.dicom_utils import convert_image_to_numpy_array
 from utils.network_utils import get_pretrained_models, get_best_checkpoints
 import keras
@@ -13,8 +12,13 @@ from datetime import datetime
 
 
 # get directories to load
-directories = get_test_set_directories()
-equalization = False
+directories = []
+with open('data/info.json') as f:
+    patient_map = json.load(f)
+    for patient in patient_map:
+        if patient_map[patient]['partition'] == 'test':
+            directories.append((patient_map[patient]['scan_dir'], patient_map[patient]['roi_dir']))
+equalization = True
 # load file names for generating the dump file name
 best_files = get_best_checkpoints()
 timestamp = datetime.today().strftime('%Y%m%d_%H%M%S')
