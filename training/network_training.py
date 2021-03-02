@@ -33,12 +33,12 @@ def zip_generator(image_data_generator, mask_data_generator):
 
 for direction in directions:
     print('Start training for direction ' + direction + ' @ ' + datetime.now().strftime("%H:%M:%S"))
-    train_scans_dir = '../data/slices/train/' + direction + separator
-    train_labels_dir = '../data/slices/train/' + direction + separator
-    validation_scans_dir = '../data/slices/validation/' + direction
-    validation_labels_dir = '../data/slices/validation/' + direction
-    test_scans_dir = '../data/slices/test/' + direction
-    test_labels_dir = '../data/slices/test/' + direction
+    train_scans_dir = 'data/slices/train/' + direction + separator
+    train_labels_dir = 'data/slices/train/' + direction + separator
+    validation_scans_dir = 'data/slices/validation/' + direction
+    validation_labels_dir = 'data/slices/validation/' + direction
+    test_scans_dir = 'data/slices/test/' + direction
+    test_labels_dir = 'data/slices/test/' + direction
     data_shape = np.array(imageio.imread(uri=train_scans_dir + 'scans' + separator + direction + '_00000000.png'),
                           dtype='uint8').shape
     # instantiate data generators
