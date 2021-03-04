@@ -30,6 +30,7 @@ def zip_generator(image_data_generator, mask_data_generator):
 for direction in directions:
     print('Start training for direction ' + direction + ' @ ' + datetime.now().strftime("%H:%M:%S"))
     train_scans_dir = 'data/slices/train/' + direction + separator
+    n_samples = len(os.listdir(train_scans_dir + 'scans'))
     train_labels_dir = 'data/slices/train/' + direction + separator
     validation_scans_dir = 'data/slices/validation/' + direction
     validation_labels_dir = 'data/slices/validation/' + direction
@@ -37,6 +38,7 @@ for direction in directions:
     test_labels_dir = 'data/slices/test/' + direction
     data_shape = np.array(imageio.imread(uri=train_scans_dir + 'scans' + separator + direction + '_00000000.png'),
                           dtype='uint8').shape
+
     # instantiate data generators
     data_gen_args = dict(
         rotation_range=5,
@@ -110,6 +112,7 @@ for direction in directions:
         train_generator,
         epochs=epochs,
         validation_data=validation_generator,
+        steps_per_epoch=n_samples / batch_size,
         callbacks=[save_callback, early_stopping_callback]
     )
     print("Training end @ ", datetime.now().strftime("%H:%M:%S"))
