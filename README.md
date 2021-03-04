@@ -76,15 +76,55 @@ a JSON file named `info.json` to be used in next steps.
         "partition": if the patient belongs to train, validation or test set
     }
   ```
-* run from the root directory `python data_preprocessing/data_cutter.py` which will generate for each patient a cut version of the scan
-  (`data/out/<patient_id>/scan_cut`) and of the ROI (`data/out/<patient_id>/roi_cut`) by using a bounding box.
-  
-  The above JSON is enriched with `scan_cut_dir` and `roi_cut_dir` keys which will point to the new created directories.
+* run from the root directory `python data_preprocessing/data_cutter.py` which will generate in `data/slices` the slices
+for training
+    ```
+  data/slices
+  |____train
+  |    |____axial
+  |    |    |____labels
+  |    |    |    | axial_00000000.png
+  |    |    |    | axial_00000001.png
+  |    |    |    | ...
+  |    |    |
+  |    |    |____scans
+  |    |         | axial_00000000.png
+  |    |         | axial_00000001.png
+  |    |         | ...
+  |    |
+  |    |____ coronal
+  |    |    |____labels
+  |    |    |    | coronal_00000000.png
+  |    |    |    | coronal_00000001.png
+  |    |    |    | ...
+  |    |    |
+  |    |    |____scans
+  |    |         | coronal_00000000.png
+  |    |         | coronal_00000001.png
+  |    |         | ...
+  |    |  
+  |    |____ sagittal
+  |         |____labels
+  |         |    | sagittal_00000000.png
+  |         |    | sagittal_00000001.png
+  |         |    | ...
+  |         |
+  |         |____scans
+  |              | sagittal_00000000.png
+  |              | sagittal_00000001.png
+  |              | ...  
+  |
+  |____test
+  |    |<as above>
+  |
+  |____validation
+         |<as above>
+  ```
 
 * run from the root directory `python training/network_training.py` (if needed edit the parameters for epochs, backbone and samples for each patient)
     
-  This will train three different unets on axial, coronal and saggital direction; the best results will 
-  be saved in `checkpoints` directory with syntax `direction_numberOfSamples_backbone-numberOfEpochs-valLoss.hdf5`
+  This will train three different unets on axial, coronal and sagittal direction; the best results will 
+  be saved in `checkpoints` directory with syntax `direction_backbone-numberOfEpochs-valLoss.hdf5`
 
 ## DETAILS
 
