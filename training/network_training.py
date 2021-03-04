@@ -17,7 +17,7 @@ separator = "/"
 # define which network to train
 directions = ['axial']  # , 'coronal', 'sagittal']
 # network parameter
-batch_size = 32
+batch_size = 50
 epochs = 20
 
 
@@ -30,7 +30,6 @@ def zip_generator(image_data_generator, mask_data_generator):
 for direction in directions:
     print('Start training for direction ' + direction + ' @ ' + datetime.now().strftime("%H:%M:%S"))
     train_scans_dir = 'data/slices/train/' + direction + separator
-    n_samples = len(os.listdir(train_scans_dir + 'scans'))
     train_labels_dir = 'data/slices/train/' + direction + separator
     validation_scans_dir = 'data/slices/validation/' + direction
     validation_labels_dir = 'data/slices/validation/' + direction
@@ -38,6 +37,14 @@ for direction in directions:
     test_labels_dir = 'data/slices/test/' + direction
     data_shape = np.array(imageio.imread(uri=train_scans_dir + 'scans' + separator + direction + '_00000000.png'),
                           dtype='uint8').shape
+
+    number_of_train_samples = len(os.listdir(train_scans_dir + 'scans'))
+    print('Number of slices in train ' + str(number_of_train_samples))
+    number_of_validation_samples = len(os.listdir(validation_scans_dir + 'scans'))
+    print('Number of slices in validation ' + str(number_of_validation_samples))
+    number_of_test_samples = len(os.listdir(validation_labels_dir + 'scans'))
+    print('Number of slices in test ' + str(number_of_test_samples))
+
 
     # instantiate data generators
     data_gen_args = dict(
@@ -112,7 +119,8 @@ for direction in directions:
         train_generator,
         epochs=epochs,
         validation_data=validation_generator,
-        steps_per_epoch=n_samples / batch_size,
+        steps_per_epoch=number_of_train_samples // batch_size,
+        validation_steps=number_of_validation_samples // batch_size,
         callbacks=[save_callback, early_stopping_callback]
     )
     print("Training end @ ", datetime.now().strftime("%H:%M:%S"))
