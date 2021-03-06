@@ -12,7 +12,7 @@ backbone = 'resnet34'
 
 
 def get_preprocessor():
-    return get_preprocessing(backbone)
+    return sm.get_preprocessing(backbone)
 
 
 def get_model(number_of_channel=1):
