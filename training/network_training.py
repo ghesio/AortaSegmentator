@@ -13,30 +13,29 @@ import numpy as np
 
 # dry run flag
 dry_run = False
-separator = "/"
+separator = "\\"
 # define which network to train
 directions = ['axial', 'coronal', 'sagittal']
 # network parameter
-batch_size = 32
+batch_size = 1
 epochs = 20
-
 preprocessor = get_preprocessor()
 
 
 def zip_generator(image_data_generator, mask_data_generator):
     zipped_generator = zip(image_data_generator, mask_data_generator)
     for (img, mask) in zipped_generator:
-        yield preprocessor(img[0]), preprocessor(mask[0])
+        yield preprocessor(img[0]), mask[0] / 255
 
 
 for direction in directions:
     print('Start training for direction ' + direction + ' @ ' + datetime.now().strftime("%H:%M:%S"))
-    train_scans_dir = 'data/slices/train/' + direction + separator
-    train_labels_dir = 'data/slices/train/' + direction + separator
-    validation_scans_dir = 'data/slices/validation/' + direction
-    validation_labels_dir = 'data/slices/validation/' + direction
-    test_scans_dir = 'data/slices/test/' + direction
-    test_labels_dir = 'data/slices/test/' + direction
+    train_scans_dir = '../data/slices/train/' + direction + separator
+    train_labels_dir = '../data/slices/train/' + direction + separator
+    validation_scans_dir = '../data/slices/validation/' + direction
+    validation_labels_dir = '../data/slices/validation/' + direction
+    test_scans_dir = '../data/slices/test/' + direction
+    test_labels_dir = '../data/slices/test/' + direction
     data_shape = np.array(imageio.imread(uri=train_scans_dir + 'scans' + separator + direction + '_00000000.png'),
                           dtype='uint8').shape
 
@@ -49,48 +48,49 @@ for direction in directions:
 
     # instantiate data generators
     # TRAIN SET
-    train_scan_generator = ImageDataGenerator(rotation_range=5,
+    train_scan_generator = ImageDataGenerator(dtype='uint8',
+                                              rotation_range=5,
                                               width_shift_range=10,
                                               height_shift_range=10,
-                                              zoom_range=[0.7, 1.4],
-                                              rescale=1. / 255).flow_from_directory(train_scans_dir,
-                                                                                    batch_size=batch_size,
-                                                                                    seed=42,
-                                                                                    color_mode='grayscale',
-                                                                                    target_size=data_shape,
-                                                                                    classes=['scans'])
+                                              zoom_range=[0.7, 1.4]
+                                              ).flow_from_directory(train_scans_dir,
+                                                                    batch_size=batch_size,
+                                                                    seed=42,
+                                                                    color_mode='grayscale',
+                                                                    target_size=data_shape,
+                                                                    classes=['scans'])
     train_mask_generator = ImageDataGenerator(rotation_range=5,
                                               width_shift_range=10,
                                               height_shift_range=10,
-                                              zoom_range=[0.7, 1.4],
-                                              rescale=1. / 255).flow_from_directory(train_labels_dir,
-                                                                                    batch_size=batch_size,
-                                                                                    seed=42,
-                                                                                    color_mode='grayscale',
-                                                                                    target_size=data_shape,
-                                                                                    classes=['labels'])
+                                              zoom_range=[0.7, 1.4]
+                                              ).flow_from_directory(train_labels_dir,
+                                                                    batch_size=batch_size,
+                                                                    seed=42,
+                                                                    color_mode='grayscale',
+                                                                    target_size=data_shape,
+                                                                    classes=['labels'])
     train_generator = zip_generator(train_scan_generator, train_mask_generator)
     # VALIDATION
-    validation_scan_generator = ImageDataGenerator(rescale=1. / 255).flow_from_directory(validation_scans_dir,
-                                                                                         shuffle=False,
-                                                                                         batch_size=batch_size,
-                                                                                         color_mode='grayscale',
-                                                                                         target_size=data_shape,
-                                                                                         classes=['scans'])
-    validation_label_generator = ImageDataGenerator(rescale=1. / 255).flow_from_directory(validation_labels_dir,
-                                                                                          shuffle=False,
-                                                                                          batch_size=batch_size,
-                                                                                          color_mode='grayscale',
-                                                                                          target_size=data_shape,
-                                                                                          classes=['labels'])
+    validation_scan_generator = ImageDataGenerator(dtype='uint8').flow_from_directory(validation_scans_dir,
+                                                                                     shuffle=False,
+                                                                                     batch_size=batch_size,
+                                                                                     color_mode='grayscale',
+                                                                                     target_size=data_shape,
+                                                                                     classes=['scans'])
+    validation_label_generator = ImageDataGenerator().flow_from_directory(validation_labels_dir,
+                                                                          shuffle=False,
+                                                                          batch_size=batch_size,
+                                                                          color_mode='grayscale',
+                                                                          target_size=data_shape,
+                                                                          classes=['labels'])
     validation_generator = zip_generator(validation_scan_generator, validation_label_generator)
     # TEST
-    test_scan_generator = ImageDataGenerator().flow_from_directory(test_scans_dir,
-                                                                   shuffle=False,
-                                                                   batch_size=batch_size,
-                                                                   color_mode='grayscale',
-                                                                   target_size=data_shape,
-                                                                   classes=['scans'])
+    test_scan_generator = ImageDataGenerator(dtype='uint8').flow_from_directory(test_scans_dir,
+                                                                               shuffle=False,
+                                                                               batch_size=batch_size,
+                                                                               color_mode='grayscale',
+                                                                               target_size=data_shape,
+                                                                               classes=['scans'])
     test_label_generator = ImageDataGenerator().flow_from_directory(test_labels_dir,
                                                                     shuffle=False,
                                                                     batch_size=batch_size,
