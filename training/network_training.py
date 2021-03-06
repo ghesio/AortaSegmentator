@@ -19,7 +19,7 @@ data_slices_root = "data/slices/"
 directions = ['axial', 'coronal', 'sagittal']
 # network parameter
 batch_size = 32
-epochs = 20
+epochs = 40
 preprocessor = get_preprocessor()
 
 
@@ -111,7 +111,8 @@ for direction in directions:
         mode='min',
         save_best_only=True)
     # b) early stopping criteria
-    early_stopping_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', patience=3)
+    early_stopping_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', patience=5,
+                                                               restore_best_weights=True)
     # fit the model
     print('Training start @ ', datetime.now().strftime("%H:%M:%S"), ' - ', direction)
     history = model.fit(
