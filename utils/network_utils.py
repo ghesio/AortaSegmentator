@@ -11,6 +11,10 @@ from keras.models import Model, load_model
 backbone = 'resnet34'
 
 
+def get_preprocessor():
+    return get_preprocessing(backbone)
+
+
 def get_model(number_of_channel=1):
     # load model
     base_model = sm.Unet(backbone, encoder_weights='imagenet')
