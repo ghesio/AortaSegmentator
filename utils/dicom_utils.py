@@ -50,7 +50,20 @@ def convert_image_to_numpy_array(input_dir, equalization=True, padding=True, roi
     image_array = sitk.GetArrayFromImage(image)
     # set B/W the image in a ROI
     if roi:
-        background_color = image_array[0][0][0]
+        # an heuristic is used to calculate the background color
+        center = image_array.shape[0] // 2
+        background_color = image_array[center][0][0]
+        # some files have problems in some slices having random
+        # uniform color, so the slices are filled with background color
+        for i in range(image_array.shape[0]):
+            if np.max(image_array[i, :, :]) == np.min(image_array[i, :, :]):
+                image_array[i, :, :].fill(background_color)
+        for i in range(image_array.shape[1]):
+            if np.max(image_array[:, i, :]) == np.min(image_array[:, i, :]):
+                image_array[:, i, :].fill(background_color)
+        for i in range(image_array.shape[2]):
+            if np.max(image_array[:, :, i]) == np.min(image_array[:, :, i]):
+                image_array[:, :, i].fill(background_color)
         image_array[image_array == background_color] = 0
         image_array[image_array != 0] = 255
         pass
@@ -86,7 +99,7 @@ def convert_image_to_numpy_array(input_dir, equalization=True, padding=True, roi
         if padding_delta_z.is_integer():
             np_pad.append((int(padding_delta_z), int(padding_delta_z)))
         else:
-            np_pad.append((int(padding_delta_z + 1/2), int(padding_delta_z - 1/2)))
+            np_pad.append((int(padding_delta_z + 1 / 2), int(padding_delta_z - 1 / 2)))
         if padding_delta_y.is_integer():
             np_pad.append((int(padding_delta_y), int(padding_delta_y)))
         else:
@@ -147,10 +160,10 @@ def save_slices(direction, image_array, root_dir):
     logging.info('Start saving ' + direction + ' view in ' + save_directory)
     last_progress = None
     for i in range(__range):
-        if math.floor(i*100/__range) % 10 == 0 and math.floor(i*100/__range) != \
+        if math.floor(i * 100 / __range) % 10 == 0 and math.floor(i * 100 / __range) != \
                 last_progress:
-            logging.info(str(math.floor(i*100/__range)) + ' %')
-            last_progress = math.floor(i*100/__range)
+            logging.info(str(math.floor(i * 100 / __range)) + ' %')
+            last_progress = math.floor(i * 100 / __range)
         output_file_name = save_directory + direction + '_' + str(i).zfill(4) + '.png'
         logging.debug('Saving image to ' + output_file_name)
         # TODO test more the image orientation filter to avoid rotating the images

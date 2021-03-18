@@ -14,7 +14,6 @@ data_out_path = 'data/slices/'
 directions = ['axial', 'coronal', 'sagittal']
 separator = "/"
 
-
 def cut(directory, direction, partition, min_index, max_index):
     dir_files = [x for x in os.listdir(directory + separator + direction) if '.png' in x]
     dir_files.sort()

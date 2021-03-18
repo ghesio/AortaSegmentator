@@ -30,8 +30,8 @@ import numpy as np
 from utils.misc import remove_everything_after_last
 
 # define validation and test size
-validation_size = 4
-test_size = 4
+validation_size = 10
+test_size = 10
 
 # global
 separator = '/' # \\ windows, / unix
