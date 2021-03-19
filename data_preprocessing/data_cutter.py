@@ -98,13 +98,17 @@ if __name__ == "__main__":
     y_coordinates_max = []
     z_coordinates_min = []
     z_coordinates_max = []
-    for patient in patient_map:
-        x_coordinates_min.append(patient_map[patient]['coordinates']['min_x'])
-        x_coordinates_max.append(patient_map[patient]['coordinates']['max_x'])
-        y_coordinates_min.append(patient_map[patient]['coordinates']['min_y'])
-        y_coordinates_max.append(patient_map[patient]['coordinates']['max_y'])
-        z_coordinates_min.append(patient_map[patient]['coordinates']['min_z'])
-        z_coordinates_max.append(patient_map[patient]['coordinates']['max_z'])
+    try:
+        for patient in patient_map:
+            x_coordinates_min.append(patient_map[patient]['coordinates']['min_x'])
+            x_coordinates_max.append(patient_map[patient]['coordinates']['max_x'])
+            y_coordinates_min.append(patient_map[patient]['coordinates']['min_y'])
+            y_coordinates_max.append(patient_map[patient]['coordinates']['max_y'])
+            z_coordinates_min.append(patient_map[patient]['coordinates']['min_z'])
+            z_coordinates_max.append(patient_map[patient]['coordinates']['max_z'])
+    except KeyError:
+        logging.error('Missing key in patient ' + patient)
+        exit(-1)
     min_x = min(x_coordinates_min)
     max_x = max(x_coordinates_max)
     min_y = min(y_coordinates_min)
