@@ -121,7 +121,8 @@ for direction in directions:
         validation_data=validation_generator,
         steps_per_epoch=number_of_train_samples // batch_size,
         validation_steps=number_of_validation_samples // batch_size,
-        callbacks=[save_callback, early_stopping_callback]
+        callbacks=[save_callback, early_stopping_callback],
+        verbose=2
     )
     print("Training end @ ", datetime.now().strftime("%H:%M:%S"))
     print("\r\nTraining results")
