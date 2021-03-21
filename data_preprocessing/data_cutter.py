@@ -147,17 +147,33 @@ if __name__ == "__main__":
             break
         else:
             i = i + 1
-    logging.info(
-        "Buonding box location (padded) (x,y,z): (" + str(int(center_x - new_side_x / 2)) + "-" + str(int(center_x +
-            new_side_x / 2)) + ") x (" + str(int(center_y - new_side_y / 2)) + "-" + str(int(center_y +
-            new_side_y / 2)) + ") x (" + str(int(center_z - new_side_z / 2)) + "-" + str(int(center_z +
-            new_side_z / 2)) + ")")
-    lower_y = center_y - int(new_side_y / 2)
-    upper_y = center_y + int(new_side_y / 2)
+
     lower_x = center_x - int(new_side_x / 2)
-    upper_x = center_x + int(new_side_x / 2)
+    if lower_x < 0:
+        upper_x = center_x + int(new_side_x / 2) - lower_x
+        lower_x = 0
+    else:
+        upper_x = center_x + int(new_side_x / 2)
+
+    lower_y = center_y - int(new_side_y / 2)
+    if lower_y < 0:
+        upper_y = center_y + int(new_side_y / 2) - lower_y
+        lower_y = 0
+    else:
+        upper_y = center_y + int(new_side_y / 2)
+
     lower_z = center_z - int(new_side_z / 2)
-    upper_z = center_z + int(new_side_z / 2)
+    if lower_z < 0:
+        upper_z = center_z + int(new_side_z / 2) - lower_z
+        lower_z = 0
+    else:
+        upper_z = center_y + int(new_side_z / 2)
+
+    logging.info(
+        "Buonding box location (padded) (x,y,z): (" + str(lower_x) + "-" + str(upper_x) + ") x (" + str(
+            lower_y) + "-" + str(upper_y) + ") x (" + str(
+            lower_z) + "-" + str(upper_z) + ")")
+
     for patient in patient_map:
         scan_slices_dir = patient_map[patient]["scan_dir"]
         roi_slices_dir = patient_map[patient]["roi_dir"]
