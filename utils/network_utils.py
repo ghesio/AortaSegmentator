@@ -31,7 +31,7 @@ def get_model(number_of_channel=1):
 
 def get_best_checkpoints():
     # read all checkpoint files
-    checkpoint_files = [file for file in os.listdir('..//checkpoints//') if backbone in file]
+    checkpoint_files = [file for file in os.listdir('checkpoints//') if backbone in file]
     # score list
     scores = []
     for file in checkpoint_files:
@@ -49,11 +49,11 @@ def get_best_checkpoints():
     best_files = []
     for file in checkpoint_files:
         if 'axial' in file and str(axial_min_score) in file:
-            best_files.append('..//checkpoints//' + file)
+            best_files.append('checkpoints//' + file)
         if 'coronal' in file and str(coronal_min_score) in file:
-            best_files.append('..//checkpoints//' + file)
+            best_files.append('checkpoints//' + file)
         if 'sagittal' in file and str(sagittal_min_score) in file:
-            best_files.append('..//checkpoints//' + file)
+            best_files.append('checkpoints//' + file)
     return best_files
 
 
