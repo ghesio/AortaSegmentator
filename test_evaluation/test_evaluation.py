@@ -22,7 +22,7 @@ equalization = True
 # load file names for generating the dump file name
 best_files = get_best_checkpoints()
 timestamp = datetime.today().strftime('%Y%m%d_%H%M%S')
-dump_file_name = '..//checkpoints//' + best_files[0][17:-10].replace('axial_', '') + '-' + timestamp + '.npz'
+dump_file_name = 'checkpoints//' + best_files[0][17:-10].replace('axial_', '') + '-' + timestamp + '.npz'
 # load models [0] = axial, [1]=coronal, [2]=sagittal
 models = get_pretrained_models()
 # vectors to store the predictions on file system
