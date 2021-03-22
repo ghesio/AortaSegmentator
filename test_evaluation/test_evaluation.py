@@ -8,12 +8,19 @@ import tensorflow as tf
 from utils import custom_logger
 from utils.misc import calculate_iou_score
 import logging
+import csv
+import os
 from datetime import datetime
 
 
 # define threshold interval and delta
 threshold_interval = [0.6, 0.9]
 delta = 0.05
+# maps to store the IoU scores
+iou_map_axial = {}
+iou_map_coronal = {}
+iou_map_sagittal = {}
+iou_map_combined = {}
 
 # get directories to load
 directories = []
