@@ -86,7 +86,7 @@ for threshold in thresholds:
     iou_map_sagittal[threshold] = []
     iou_map_combined[threshold] = []
     logging.info("Evaluating threshold " + str(threshold))
-    for i in range(array_axial.shape[0]):
+    for i in range(len(array_axial)):
         prediction_axial = np.copy(array_axial[i])
         prediction_coronal = np.copy(array_coronal[i])
         prediction_sagittal = np.copy(array_sagittal[i])
