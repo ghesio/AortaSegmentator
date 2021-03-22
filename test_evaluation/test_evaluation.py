@@ -11,6 +11,10 @@ import logging
 from datetime import datetime
 
 
+# define threshold interval and delta
+threshold_interval = [0.6, 0.9]
+delta = 0.05
+
 # get directories to load
 directories = []
 with open('data/info.json') as f:
