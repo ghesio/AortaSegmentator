@@ -110,7 +110,7 @@ for threshold in thresholds:
             logging.exception("Error on shape")
             continue
 
-filename = '../data/results_' + timestamp + '.tsv'
+filename = 'data/results.tsv'
 logging.info('Saving tsv file - ' + filename)
 with open(filename, 'w', newline='') as file:
     writer = csv.writer(file, delimiter='\t')
