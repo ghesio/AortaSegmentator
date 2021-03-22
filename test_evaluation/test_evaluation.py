@@ -12,7 +12,6 @@ import csv
 import os
 from datetime import datetime
 
-
 # define threshold interval and delta
 threshold_interval = [0.6, 0.9]
 delta = 0.05
@@ -96,16 +95,20 @@ for threshold in thresholds:
         prediction_coronal[prediction_coronal >= threshold] = 1
         prediction_sagittal[prediction_sagittal >= threshold] = 1
         prediction_combined[prediction_combined >= threshold] = 1
-        axial_iou_score = calculate_iou_score(prediction=prediction_axial, ground_truth=roi_array)
-        iou_map_axial[threshold].append(axial_iou_score)
-        coronal_iou_score = calculate_iou_score(prediction=prediction_coronal, ground_truth=roi_array)
-        iou_map_coronal[threshold].append(coronal_iou_score)
-        sagittal_iou_score = calculate_iou_score(prediction=prediction_sagittal, ground_truth=roi_array)
-        iou_map_sagittal[threshold].append(sagittal_iou_score)
-        combined_iou_score = calculate_iou_score(prediction=prediction_combined, ground_truth=roi_array)
-        iou_map_combined[threshold].append(combined_iou_score)
-        logging.debug('IoU scores (axial, coronal, sagittal, combined): ' + str(axial_iou_score) + ' '
-                       + str(coronal_iou_score) + ' ' + str(sagittal_iou_score) + ' ' + str(combined_iou_score))
+        try:
+            axial_iou_score = calculate_iou_score(prediction=prediction_axial, ground_truth=roi_array)
+            iou_map_axial[threshold].append(axial_iou_score)
+            coronal_iou_score = calculate_iou_score(prediction=prediction_coronal, ground_truth=roi_array)
+            iou_map_coronal[threshold].append(coronal_iou_score)
+            sagittal_iou_score = calculate_iou_score(prediction=prediction_sagittal, ground_truth=roi_array)
+            iou_map_sagittal[threshold].append(sagittal_iou_score)
+            combined_iou_score = calculate_iou_score(prediction=prediction_combined, ground_truth=roi_array)
+            iou_map_combined[threshold].append(combined_iou_score)
+            logging.info('IoU scores (axial, coronal, sagittal, combined): ' + str(axial_iou_score) + ' '
+                         + str(coronal_iou_score) + ' ' + str(sagittal_iou_score) + ' ' + str(combined_iou_score))
+        except ValueError:
+            logging.exception("Error on shape")
+            continue
 
 filename = '../data/results_' + timestamp + '.tsv'
 logging.info('Saving tsv file - ' + filename)
@@ -134,4 +137,3 @@ with open(filename, 'w', newline='') as file:
                          round(float(np.std(iou_map_combined[threshold])), 4),
                          round(float(np.var(iou_map_combined[threshold])), 4)])
 exit(0)
-
