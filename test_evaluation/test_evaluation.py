@@ -1,6 +1,6 @@
 import json
 from utils.dicom_utils import convert_image_to_numpy_array
-from utils.network_utils import get_pretrained_models, get_best_checkpoints
+from utils.network_utils import get_pretrained_models, get_best_checkpoints, get_preprocessor
 import keras
 import numpy as np
 import tensorflow as tf
