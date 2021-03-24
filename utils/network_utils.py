@@ -1,12 +1,13 @@
 # https://segmentation-models.readthedocs.io/en/latest/tutorial.html#training-with-non-rgb-data
 import os
+
 # see https://github.com/qubvel/segmentation_models/issues/374
 os.environ['SM_FRAMEWORK'] = 'tf.keras'
 # https://github.com/qubvel/segmentation_models
 import segmentation_models as sm
 from keras.layers import Input, Conv2D
 from keras.models import Model, load_model
-from tf.keras.optimizers import Adam
+from keras.optimizers import Adam
 
 # define backbone for the networks
 backbone = 'resnet34'
@@ -33,7 +34,7 @@ def get_model(number_of_channel=1):
 
 def get_best_checkpoints():
     # read all checkpoint files
-    checkpoint_files = [file for file in os.listdir('checkpoints//') if backbone in file]
+    checkpoint_files = [file for file in os.listdir('../checkpoints/') if backbone in file]
     # score list
     scores = []
     for file in checkpoint_files:
@@ -51,11 +52,11 @@ def get_best_checkpoints():
     best_files = []
     for file in checkpoint_files:
         if 'axial' in file and str(axial_min_score) in file:
-            best_files.append('checkpoints//' + file)
+            best_files.append('../checkpoints//' + file)
         if 'coronal' in file and str(coronal_min_score) in file:
-            best_files.append('checkpoints//' + file)
+            best_files.append('../checkpoints//' + file)
         if 'sagittal' in file and str(sagittal_min_score) in file:
-            best_files.append('checkpoints//' + file)
+            best_files.append('../checkpoints//' + file)
     return best_files
 
 
