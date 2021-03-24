@@ -6,6 +6,7 @@ os.environ['SM_FRAMEWORK'] = 'tf.keras'
 import segmentation_models as sm
 from keras.layers import Input, Conv2D
 from keras.models import Model, load_model
+from tf.keras.optimizers import Adam
 
 # define backbone for the networks
 backbone = 'resnet34'
@@ -25,7 +26,8 @@ def get_model(number_of_channel=1):
     # print model summary
     model.summary()
     # compile the model
-    model.compile('Adam', loss=sm.losses.bce_jaccard_loss, metrics=[sm.metrics.iou_score])
+    opt = Adam(learning_rate=0.1)
+    model.compile(optimizer=opt, loss=sm.losses.bce_jaccard_loss, metrics=[sm.metrics.iou_score])
     return model
 
 
