@@ -21,6 +21,8 @@ iou_map_coronal = {}
 iou_map_sagittal = {}
 iou_map_combined = {}
 
+preprocessor = get_preprocessor()
+
 # get directories to load
 directories = []
 with open('data/info.json') as f:
@@ -58,16 +60,16 @@ for i in range(len(directories)):
     # predict axial value
     logging.info('Predicting axial values')
     for j in range(scan_array.shape[0]):
-        current = tf.expand_dims(tf.expand_dims(np.flipud(scan_array[j, :, :]), axis=-1), axis=0)
+        current = tf.expand_dims(tf.expand_dims(preprocessor(np.flipud(scan_array[j, :, :])), axis=-1), axis=0)
         prediction_axial[j, :, :] = models[0].predict(current).reshape(axial_shape)
     # predict coronal value
     logging.info('Predicting coronal values')
     for j in range(scan_array.shape[1]):
-        current = tf.expand_dims(tf.expand_dims(scan_array[:, j, :], axis=-1), axis=0)
+        current = tf.expand_dims(tf.expand_dims(preprocessor(scan_array[:, j, :]), axis=-1), axis=0)
         prediction_coronal[:, j, :] = models[1].predict(current).reshape(coronal_shape)
     logging.info('Predicting sagittal values')
     for j in range(scan_array.shape[2]):
-        current = tf.expand_dims(tf.expand_dims(np.fliplr(scan_array[:, :, j]), axis=-1), axis=0)
+        current = tf.expand_dims(tf.expand_dims(np.fliplr(preprocessor(scan_array[:, :, j])), axis=-1), axis=0)
         prediction_sagittal[:, :, j] = models[2].predict(current).reshape(sagittal_shape)
     # combine the views and calculate IoU
     prediction_combined = (prediction_axial + prediction_coronal + prediction_coronal) / 3.0
