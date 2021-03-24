@@ -2,7 +2,7 @@ import os
 
 # see https://github.com/qubvel/segmentation_models/issues/374
 os.environ['SM_FRAMEWORK'] = 'tf.keras'
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 # https://github.com/qubvel/segmentation_models
 import tensorflow as tf
 from datetime import datetime

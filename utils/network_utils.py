@@ -10,7 +10,8 @@ from keras.models import Model, load_model
 from keras.optimizers import Adam
 
 # define backbone for the networks
-backbone = 'resnet34'
+#backbone = 'resnet34'
+backbone = 'seresnext101'
 
 
 def get_preprocessor():
@@ -27,7 +28,7 @@ def get_model(number_of_channel=1):
     # print model summary
     model.summary()
     # compile the model
-    opt = Adam(learning_rate=0.1)
+    opt = Adam()
     model.compile(optimizer=opt, loss=sm.losses.bce_jaccard_loss, metrics=[sm.metrics.iou_score])
     return model
 
