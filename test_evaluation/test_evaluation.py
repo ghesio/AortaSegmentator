@@ -46,7 +46,7 @@ for i in range(len(directories)):
     roi_dir = str.replace(directories[i][1], 'out', 'in')
     # load scan image
     scan_array = convert_image_to_numpy_array(input_dir=scan_dir, equalization=equalization, padding=True, roi=False)
-    roi.append(convert_image_to_numpy_array(input_dir=roi_dir, equalization=equalization, padding=True, roi=True))
+    roi.append(convert_image_to_numpy_array(input_dir=roi_dir, equalization=equalization, padding=True, roi=True) / 255)
     axial_shape = scan_array[0, :, :].shape
     coronal_shape = scan_array[:, 0, :].shape
     sagittal_shape = scan_array[:, :, 0].shape

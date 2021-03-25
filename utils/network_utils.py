@@ -10,8 +10,10 @@ from keras.models import Model, load_model
 from keras.optimizers import Adam
 
 # define backbone for the networks
-#backbone = 'resnet34'
-backbone = 'seresnext101'
+backbone = 'resnet34'
+#backbone = 'seresnext101'
+
+checkpoint_dir = '../checkpoints/'
 
 
 def get_preprocessor():
@@ -35,7 +37,7 @@ def get_model(number_of_channel=1):
 
 def get_best_checkpoints():
     # read all checkpoint files
-    checkpoint_files = [file for file in os.listdir('checkpoints/') if backbone in file]
+    checkpoint_files = [file for file in os.listdir(checkpoint_dir) if backbone in file]
     # score list
     scores = []
     for file in checkpoint_files:
@@ -53,11 +55,11 @@ def get_best_checkpoints():
     best_files = []
     for file in checkpoint_files:
         if 'axial' in file and str(axial_min_score) in file:
-            best_files.append('checkpoints//' + file)
+            best_files.append(checkpoint_dir + file)
         if 'coronal' in file and str(coronal_min_score) in file:
-            best_files.append('checkpoints//' + file)
+            best_files.append(checkpoint_dir + file)
         if 'sagittal' in file and str(sagittal_min_score) in file:
-            best_files.append('checkpoints//' + file)
+            best_files.append(checkpoint_dir + file)
     return best_files
 
 
