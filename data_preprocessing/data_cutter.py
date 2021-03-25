@@ -1,37 +1,50 @@
 import json
-import math
-import os, shutil
-import numpy as np
 # LOGGING
-from utils import custom_logger
 import logging
+from utils import custom_logger
+import math
+import os
 import cv2
 import imageio
+import numpy as np
 
+# data dirs
+info_path = 'data/info.json'
+data_out_path = 'data/slices/'
+directions = ['axial', 'coronal', 'sagittal']
+separator = "/"
 
-def __cut(directory):
-    dir_files = [x for x in os.listdir(directory) if '.png' in x]
+def cut(directory, direction, partition, min_index, max_index):
+    dir_files = [x for x in os.listdir(directory + separator + direction) if '.png' in x]
     dir_files.sort()
-    for j in range(len(dir_files)):
-        current_image_path = directory + '/' + dir_files[j]
-        if 'roi' in _dir:
-            out_dir = directory.replace('roi', 'roi_cut')
-        else:
-            out_dir = directory.replace('scan', 'scan_cut')
-        out_image_path = out_dir + '/' + dir_files[j]
-        if not os.path.exists(out_dir):
-            os.makedirs(out_dir)
+    root_dir = data_out_path + partition + separator + direction + separator
+    if 'roi' in directory:
+        out_dir = root_dir + 'labels' + separator
+    else:
+        out_dir = root_dir + 'scans' + separator
+    increment = 0
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+    else:
+        already_cut = [x for x in os.listdir(out_dir) if '.png' in x]
+        if already_cut:
+            already_cut.sort()
+            increment = int(already_cut[len(already_cut) - 1][-12:-4]) + 1
+    k = 0
+    for j in np.arange(min_index, max_index - 1):
+        current_image_path = directory + separator + direction + separator + dir_files[j]
+        out_image_path = out_dir + direction + '_' + str(k + increment).zfill(8) + '.png'
         # read the image into a numpy array
         current_image = np.array(imageio.imread(uri=current_image_path), dtype='uint8')
         cut_image = None
-        if 'axial' in directory:
+        if direction == 'axial':
             cut_image = current_image[lower_y:upper_y, lower_x:upper_x]
             cut_image = pad_to_new_shape(cut_image, (new_side_y, new_side_x))
-        elif 'coronal' in directory:
+        elif direction == 'coronal':
             pass  # ? the instruction below elif is skipped ?
             cut_image = current_image[lower_z:upper_z, lower_x:upper_x]
             cut_image = pad_to_new_shape(cut_image, (new_side_z, new_side_x))
-        elif 'sagittal' in directory:
+        else:
             pass  # ? the instruction below elif is skipped ?
             cut_image = current_image[lower_z:upper_z, lower_y:upper_y]
             cut_image = pad_to_new_shape(cut_image, (new_side_z, new_side_y))
@@ -42,6 +55,7 @@ def __cut(directory):
         if status is False:
             logging.error('Error saving image. Path:' + out_image_path
                           + " - image shape: " + str(cut_image.shape))
+        k = k + 1
 
 
 def pad_to_new_shape(already_cut, new_shape):
@@ -71,50 +85,38 @@ def pad_to_new_shape(already_cut, new_shape):
 
 
 if __name__ == "__main__":
-    # flags
+
     just_check = False
     overwrite = True
-    # data dirs
-    info_path = 'data/info.json'
-    data_out_path = 'data/out/'
     # read JSON containing information
     with open(info_path) as f:
         patient_map = json.load(f)
-    # initialize minima and maxima variables
-    min_x = 99999
-    max_x = -99999
-    min_y = 99999
-    max_y = -99999
-    min_z = 99999
-    max_z = -99999
     # iterate through every patient and get bounding box vertexes
-    for patient in patient_map:
-        if patient_map[patient]['coordinates']['min_y'] < min_y:
-            min_y = patient_map[patient]['coordinates']['min_y']
-        if patient_map[patient]['coordinates']['max_y'] > max_y:
-            max_y = patient_map[patient]['coordinates']['max_y']
-        if patient_map[patient]['coordinates']['min_x'] < min_x:
-            min_x = patient_map[patient]['coordinates']['min_x']
-        if patient_map[patient]['coordinates']['max_x'] > max_x:
-            max_x = patient_map[patient]['coordinates']['max_x']
-        if patient_map[patient]['coordinates']['min_z'] < min_z:
-            min_z = patient_map[patient]['coordinates']['min_z']
-        if patient_map[patient]['coordinates']['max_z'] > max_z:
-            max_z = patient_map[patient]['coordinates']['max_z']
-        patient_map[patient]['roi_cut_dir'] = patient_map[patient]['roi_dir'].replace('roi', 'roi_cut')
-        patient_map[patient]['scan_cut_dir'] = patient_map[patient]['scan_dir'].replace('scan', 'scan_cut')
-        if overwrite:
-            if os.path.isdir(patient_map[patient]['roi_cut_dir']):
-                shutil.rmtree(patient_map[patient]['roi_cut_dir'])
-            if os.path.isdir(patient_map[patient]['scan_cut_dir']):
-                shutil.rmtree(patient_map[patient]['scan_cut_dir'])
-    logging.info("Updating JSON info file")
-    with open(info_path, 'w') as outfile:
-        json.dump(patient_map, outfile, indent=4)
-
+    x_coordinates_min = []
+    x_coordinates_max = []
+    y_coordinates_min = []
+    y_coordinates_max = []
+    z_coordinates_min = []
+    z_coordinates_max = []
+    try:
+        for patient in patient_map:
+            x_coordinates_min.append(patient_map[patient]['coordinates']['min_x'])
+            x_coordinates_max.append(patient_map[patient]['coordinates']['max_x'])
+            y_coordinates_min.append(patient_map[patient]['coordinates']['min_y'])
+            y_coordinates_max.append(patient_map[patient]['coordinates']['max_y'])
+            z_coordinates_min.append(patient_map[patient]['coordinates']['min_z'])
+            z_coordinates_max.append(patient_map[patient]['coordinates']['max_z'])
+    except KeyError:
+        logging.error('Missing key in patient ' + patient)
+        exit(-1)
+    min_x = min(x_coordinates_min)
+    max_x = max(x_coordinates_max)
+    min_y = min(y_coordinates_min)
+    max_y = max(y_coordinates_max)
+    min_z = min(z_coordinates_min)
+    max_z = max(z_coordinates_max)
     logging.info("Buonding box location (before padding) (x,y,z): (" + str(min_x) + "-" + str(max_x) + ") x (" +
                  str(min_y) + "-" + str(max_y) + ") x (" + str(min_z) + "-" + str(max_z) + ")")
-
     # get max side value to pad to 32px multiple
     side_x = max_x - min_x
     side_y = max_y - min_y
@@ -125,9 +127,6 @@ if __name__ == "__main__":
     center_z = math.ceil((max_z + min_z) / 2)
     logging.info('Buonding box center: (x,y,z) ' + str(center_x) + 'x' + str(center_y) + 'x' + str(center_z))
     i = 1
-    new_side_x = None
-    new_side_y = None
-    new_side_z = None
     while True:
         if side_x < 32 * i:
             new_side_x = int(32 * i)
@@ -148,67 +147,52 @@ if __name__ == "__main__":
             break
         else:
             i = i + 1
-    logging.info(
-        "Buonding box location (padded) (x,y,z): (" + str(int(center_x - new_side_x / 2)) + "-" + str(int(center_x +
-            new_side_x / 2)) + ") x (" + str(int(center_y - new_side_y / 2)) + "-" + str(int(center_y +
-            new_side_y / 2)) + ") x (" + str(int(center_z - new_side_z / 2)) + "-" + str(int(center_z +
-            new_side_z / 2)) + ")")
-    # iterate through directories
-    dir_names = [x[0] for x in os.walk(data_out_path) if ('axial' in x[0] or 'coronal' in x[0] or 'sagittal' in x[0])
-                 and 'cut' not in x[0]]
-    dir_names.sort()
-    lower_y = center_y - int(new_side_y / 2)
-    upper_y = center_y + int(new_side_y / 2)
+
     lower_x = center_x - int(new_side_x / 2)
-    upper_x = center_x + int(new_side_x / 2)
+    if lower_x < 0:
+        upper_x = center_x + int(new_side_x / 2) - lower_x
+        lower_x = 0
+    else:
+        upper_x = center_x + int(new_side_x / 2)
+
+    lower_y = center_y - int(new_side_y / 2)
+    if lower_y < 0:
+        upper_y = center_y + int(new_side_y / 2) - lower_y
+        lower_y = 0
+    else:
+        upper_y = center_y + int(new_side_y / 2)
+
     lower_z = center_z - int(new_side_z / 2)
-    upper_z = center_z + int(new_side_z / 2)
-    for _dir in dir_names:
-        logging.info('Processing ' + _dir)
-        if not just_check:
-            __cut(_dir)
-    # check integrity: for each original slice there must be a cut slice
+    if lower_z < 0:
+        upper_z = center_z + int(new_side_z / 2) - lower_z
+        lower_z = 0
+    else:
+        upper_z = center_y + int(new_side_z / 2)
+
+    logging.info(
+        "Buonding box location (padded) (x,y,z): (" + str(lower_x) + "-" + str(upper_x) + ") x (" + str(
+            lower_y) + "-" + str(upper_y) + ") x (" + str(
+            lower_z) + "-" + str(upper_z) + ")")
+
     for patient in patient_map:
-        # roi
-        roi_cut_dir = patient_map[patient]['roi_cut_dir']
-        roi_dir = patient_map[patient]['roi_dir']
-        # axial
-        roi_files = [x for x in os.listdir(roi_dir + '/axial/') if '.png' in x]
-        roi_cut_files = [x for x in os.listdir(roi_cut_dir + '/axial/') if '.png' in x]
-        difference = [x for x in roi_cut_files if x not in set(roi_files)]
-        if difference:
-            logging.error('Missing slices in directory ' + roi_cut_dir)
-        # coronal
-        roi_files = [x for x in os.listdir(roi_dir + '/coronal/') if '.png' in x]
-        roi_cut_files = [x for x in os.listdir(roi_cut_dir + '/coronal/') if '.png' in x]
-        difference = [x for x in roi_cut_files if x not in set(roi_files)]
-        if difference:
-            logging.error('Missing slices in directory ' + roi_cut_dir)
-        # axial
-        roi_files = [x for x in os.listdir(roi_dir + '/sagittal/') if '.png' in x]
-        roi_cut_files = [x for x in os.listdir(roi_cut_dir + '/sagittal/') if '.png' in x]
-        difference = [x for x in roi_cut_files if x not in set(roi_files)]
-        if difference:
-            logging.error('Missing slices in directory ' + roi_cut_dir)
-        # scan
-        scan_cut_dir = patient_map[patient]['roi_cut_dir']
-        scan_dir = patient_map[patient]['roi_dir']
-        # axial
-        scan_files = [x for x in os.listdir(scan_dir + '/axial/') if '.png' in x]
-        scan_cut_files = [x for x in os.listdir(scan_cut_dir + '/axial/') if '.png' in x]
-        difference = [x for x in scan_cut_files if x not in set(scan_files)]
-        if difference:
-            logging.error('Missing slices in directory ' + scan_cut_dir)
-        # coronal
-        scan_files = [x for x in os.listdir(scan_dir + '/coronal/') if '.png' in x]
-        scan_cut_files = [x for x in os.listdir(scan_cut_dir + '/coronal/') if '.png' in x]
-        difference = [x for x in scan_cut_files if x not in set(scan_files)]
-        if difference:
-            logging.error('Missing slices in directory ' + scan_cut_dir)
-        # axial
-        scan_files = [x for x in os.listdir(scan_dir + '/sagittal/') if '.png' in x]
-        scan_cut_files = [x for x in os.listdir(scan_cut_dir + '/sagittal/') if '.png' in x]
-        difference = [x for x in scan_cut_files if x not in set(scan_files)]
-        if difference:
-            logging.error('Missing slices in directory ' + scan_cut_dir)
+        scan_slices_dir = patient_map[patient]["scan_dir"]
+        roi_slices_dir = patient_map[patient]["roi_dir"]
+        for direction in directions:
+            min_index = patient_map[patient][direction]["min_slice"]
+            max_index = patient_map[patient][direction]["max_slice"]
+            # check that we have the same number of slices in both scan and roi dirs to avoid dirt in dataset
+            scan_files_list = [scan_slices_dir + separator + direction + separator + direction + '_' + str(x).zfill(4)
+                          + '.png' for x in np.arange(min_index, max_index - 1)]
+            roi_files_list = [roi_slices_dir + separator + direction + separator + direction + '_' + str(x).zfill(4)
+                          + '.png' for x in np.arange(min_index, max_index - 1)]
+            if all([os.path.isfile(f) for f in scan_files_list]) is False \
+                or all([os.path.isfile(f) for f in roi_files_list]) is False:
+                logging.error('Skipping patient - ' + patient + ' - missing slices in ' + direction)
+                continue
+            logging.info('Processing patient ' + patient + ' - direction ' + direction)
+            # actually cut the slices
+            cut(scan_slices_dir, direction, patient_map[patient]["partition"],
+                min_index, max_index)
+            cut(roi_slices_dir, direction, patient_map[patient]["partition"],
+                min_index, max_index)
     exit(0)

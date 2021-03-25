@@ -134,6 +134,8 @@ dmypy.json
 !/data/in/.gitkeep
 /data/out/**
 !/data/out/.gitkeep
+/data/slices/**
+!/data/slices/.gitkeep
 /data/info.json
 /checkpoints/**
 !/checkpoints/.gitkeep

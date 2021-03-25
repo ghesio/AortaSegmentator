@@ -1,6 +1,7 @@
-import numpy as np
-from utils import custom_logger
+# LOGGING
 import logging
+from utils import custom_logger
+import numpy as np
 
 
 def remove_everything_after_last(haystack, needle='/', n=1):

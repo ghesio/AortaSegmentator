@@ -14,6 +14,8 @@ from utils.dicom_utils import convert_image_to_numpy_array, save_slices, convert
 from utils import custom_logger
 import logging
 
+data_in_dir = 'data/in'
+
 
 def __read_all_directories():
     """
@@ -21,7 +23,7 @@ def __read_all_directories():
     :return: dictionary input-output directory (in ../data/out)
     """
     input_dir_names = []
-    for root, dirs, files in os.walk('data/in'):
+    for root, dirs, files in os.walk(data_in_dir):
         if not dirs:
             input_dir_names += [os.path.abspath(root)]
     __file_map = {}
