@@ -62,11 +62,11 @@ def get_best_checkpoints():
     best_files = []
     for file in checkpoint_files:
         if 'axial' in file and str(axial_min_score) in file:
-            best_files.append(checkpoint_dir + file)
+            best_files.append(checkpoint_dir + '/' + architecture + '/' + file)
         if 'coronal' in file and str(coronal_min_score) in file:
-            best_files.append(checkpoint_dir + file)
+            best_files.append(checkpoint_dir + '/' + architecture + '/' + file)
         if 'sagittal' in file and str(sagittal_min_score) in file:
-            best_files.append(checkpoint_dir + file)
+            best_files.append(checkpoint_dir + '/' + architecture + '/' + file)
     return best_files
 
 
