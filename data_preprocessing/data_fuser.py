@@ -11,9 +11,9 @@ def fuse_slices_assertion(root_path, out_file, out_spacing=(1.0, 1.0, 1.0)):
     coronal_files = [root_path + 'coronal\\' + x for x in os.listdir(root_path + 'coronal')]
     axial_files = [root_path + 'axial\\' + x for x in os.listdir(root_path + 'axial')]
     # read all files in different arrays
-    sagittal_array = [np.fliplr(np.array(imageio.imread(uri=x), dtype='uint8')) for x in sagittal_files]
+    sagittal_array = [np.array(imageio.imread(uri=x), dtype='uint8') for x in sagittal_files]
     coronal_array = [np.array(imageio.imread(uri=x), dtype='uint8') for x in coronal_files]
-    axial_array = [np.flipud(np.array(imageio.imread(uri=x), dtype='uint8')) for x in axial_files]
+    axial_array = [np.array(imageio.imread(uri=x), dtype='uint8') for x in axial_files]
     axial_shape = np.shape(axial_array)
     combined_axial = np.empty(shape=(axial_shape[0], axial_shape[1], axial_shape[2]))
     combined_coronal = np.empty(shape=(axial_shape[0], axial_shape[1], axial_shape[2]))

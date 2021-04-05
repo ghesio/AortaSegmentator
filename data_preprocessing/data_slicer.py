@@ -27,6 +27,7 @@ def __read_all_directories():
         if not dirs:
             input_dir_names += [os.path.abspath(root)]
     __file_map = {}
+    input_dir_names.sort()
     for __dir in input_dir_names:
         __file_map[__dir] = __dir.replace('in', 'out')
     return __file_map

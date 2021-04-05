@@ -83,6 +83,7 @@ if __name__ == "__main__":
 	for root, dirs, files in os.walk(data_out_dir):
 		if not dirs:
 			dir_names += [os.path.abspath(root)]
+	dir_names.sort()
 	patient_map = {}
 	for _dir in dir_names:
 		patient_id = re.sub(r'^.*?data' + re.escape(separator) + 'out' + re.escape(separator), '', _dir).split(separator, 1)[0]
