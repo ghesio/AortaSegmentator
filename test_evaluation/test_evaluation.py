@@ -39,6 +39,9 @@ array_coronal = []
 array_sagittal = []
 array_combined = []
 roi = []
+best_score = 0
+best_view = None
+best_threshold = None
 # iterate all directories
 for i in range(len(directories)):
     logging.info('Loading directories ' + str(directories[i]))
@@ -99,12 +102,28 @@ for threshold in thresholds:
         prediction_combined[prediction_combined >= threshold] = 1
         try:
             axial_iou_score = calculate_iou_score(prediction=prediction_axial, ground_truth=roi_array)
+            if axial_iou_score > best_score:
+                best_score = axial_iou_score
+                best_view = 'axial'
+                best_threshold = threshold
             iou_map_axial[threshold].append(axial_iou_score)
             coronal_iou_score = calculate_iou_score(prediction=prediction_coronal, ground_truth=roi_array)
+            if coronal_iou_score > best_score:
+                best_score = coronal_iou_score
+                best_view = 'coronal'
+                best_threshold = threshold
             iou_map_coronal[threshold].append(coronal_iou_score)
             sagittal_iou_score = calculate_iou_score(prediction=prediction_sagittal, ground_truth=roi_array)
+            if sagittal_iou_score > best_score:
+                best_score = sagittal_iou_score
+                best_view = 'sagittal'
+                best_threshold = threshold
             iou_map_sagittal[threshold].append(sagittal_iou_score)
             combined_iou_score = calculate_iou_score(prediction=prediction_combined, ground_truth=roi_array)
+            if combined_iou_score > best_score:
+                best_score = combined_iou_score
+                best_view = 'combined'
+                best_threshold = threshold
             iou_map_combined[threshold].append(combined_iou_score)
             logging.info('IoU scores (axial, coronal, sagittal, combined): ' + str(axial_iou_score) + ' '
                          + str(coronal_iou_score) + ' ' + str(sagittal_iou_score) + ' ' + str(combined_iou_score))
@@ -112,7 +131,7 @@ for threshold in thresholds:
             logging.exception("Error on shape")
             continue
 
-filename = 'data/results_' + backbone + '_' + architecture + '.tsv'
+filename = 'results/results_' + backbone + '_' + architecture + '.tsv'
 logging.info('Saving tsv file - ' + filename)
 with open(filename, 'w', newline='') as file:
     writer = csv.writer(file, delimiter='\t')
@@ -138,4 +157,7 @@ with open(filename, 'w', newline='') as file:
                          round(float(np.mean(iou_map_combined[threshold])), 4),
                          round(float(np.std(iou_map_combined[threshold])), 4),
                          round(float(np.var(iou_map_combined[threshold])), 4)])
+text_file = open('results/results_' + backbone + '_' + architecture + '_best.txt', 'w')
+text_file.write(str(best_view) + ' - ' + str(best_threshold) + ' - ' + str(best_score))
+text_file.close()
 exit(0)
