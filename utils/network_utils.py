@@ -13,7 +13,7 @@ from keras.optimizers import Adam
 backbone = 'resnet34'
 #backbone = 'seresnext101'
 architecture = 'unet'  # unet, pspnet, linknet, fpn
-checkpoint_dir = '../checkpoints/'
+checkpoint_dir = 'checkpoints/'
 
 
 def get_preprocessor():
