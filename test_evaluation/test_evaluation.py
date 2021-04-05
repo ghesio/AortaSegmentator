@@ -1,6 +1,6 @@
 import json
 from utils.dicom_utils import convert_image_to_numpy_array
-from utils.network_utils import get_pretrained_models, get_best_checkpoints, get_preprocessor
+from utils.network_utils import get_pretrained_models, get_best_checkpoints, get_preprocessor, backbone, architecture
 import keras
 import numpy as np
 import tensorflow as tf
@@ -112,7 +112,7 @@ for threshold in thresholds:
             logging.exception("Error on shape")
             continue
 
-filename = 'data/results.tsv'
+filename = 'data/results_' + backbone + '_' + architecture + '.tsv'
 logging.info('Saving tsv file - ' + filename)
 with open(filename, 'w', newline='') as file:
     writer = csv.writer(file, delimiter='\t')

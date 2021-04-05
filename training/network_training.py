@@ -6,7 +6,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 # https://github.com/qubvel/segmentation_models
 import tensorflow as tf
 from datetime import datetime
-from utils.network_utils import get_model, backbone, get_preprocessor
+from utils.network_utils import get_model, backbone, architecture, get_preprocessor
 from keras.preprocessing.image import ImageDataGenerator
 import imageio
 import numpy as np
@@ -30,7 +30,6 @@ def zip_generator(image_data_generator, mask_data_generator):
 
 
 for direction in directions:
-    print('Start training for direction ' + direction + ' @ ' + datetime.now().strftime("%H:%M:%S"))
     train_scan_root = data_slices_root + 'train/' + direction + separator
     validation_scan_root = data_slices_root + 'validation/' + direction + separator
     test_scan_root = data_slices_root + 'test/' + direction + separator
@@ -104,7 +103,7 @@ for direction in directions:
     # define callbacks
     # a) save checkpoints
     save_callback = tf.keras.callbacks.ModelCheckpoint(
-        filepath='checkpoints/' + direction + '_'
+        filepath='checkpoints/' + architecture + '/' + direction + '_'
                  + backbone + '-{epoch:02d}-{val_loss:.2f}.hdf5',
         save_weights_only=False,
         monitor='val_loss',
@@ -114,7 +113,8 @@ for direction in directions:
     early_stopping_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', patience=5,
                                                                restore_best_weights=True)
     # fit the model
-    print('Training start @ ', datetime.now().strftime("%H:%M:%S"), ' - ', direction)
+    print('Training start @ ', datetime.now().strftime("%H:%M:%S"), ' - ', direction, ' - ', backbone, ' - ',
+          architecture)
     history = model.fit(
         train_generator,
         epochs=epochs,
@@ -129,6 +129,7 @@ for direction in directions:
     for key in history.history.keys():
         print('\t' + key + ':', history.history[key])
     print("\r\nTest evaluation")
-    results = model.evaluate(test_generator, batch_size=batch_size, steps=number_of_test_samples // batch_size)
+    results = model.evaluate(test_generator, batch_size=batch_size, steps=number_of_test_samples // batch_size,
+                             verbose=0)
     print('\tLoss:', results[0], 'Accuracy:', results[1])
 exit(0)

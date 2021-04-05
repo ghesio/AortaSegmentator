@@ -12,7 +12,7 @@ from keras.optimizers import Adam
 # define backbone for the networks
 backbone = 'resnet34'
 #backbone = 'seresnext101'
-
+architecture = 'unet'  # unet, pspnet, linknet, fpn
 checkpoint_dir = '../checkpoints/'
 
 
@@ -22,7 +22,14 @@ def get_preprocessor():
 
 def get_model(number_of_channel=1):
     # load model
-    base_model = sm.Unet(backbone, encoder_weights='imagenet')
+    if architecture is 'fpn':
+        base_model = sm.FPN(backbone, encoder_weights='imagenet')
+    elif architecture is 'pspnet':
+        base_model = sm.PSPNet(backbone, encoder_weights='imagenet')
+    elif architecture is 'linknet':
+        base_model = sm.Linknet(backbone, encoder_weights='imagenet')
+    else:
+        base_model = sm.Unet(backbone, encoder_weights='imagenet')
     inp = Input(shape=(None, None, number_of_channel))
     l1 = Conv2D(3, (1, 1))(inp)  # map N channels data to 3 channels
     out = base_model(l1)
@@ -37,7 +44,7 @@ def get_model(number_of_channel=1):
 
 def get_best_checkpoints():
     # read all checkpoint files
-    checkpoint_files = [file for file in os.listdir(checkpoint_dir) if backbone in file]
+    checkpoint_files = [file for file in os.listdir(checkpoint_dir + '/' + architecture) if backbone in file]
     # score list
     scores = []
     for file in checkpoint_files:
@@ -72,7 +79,5 @@ def get_pretrained_models():
 
 
 if __name__ == "__main__":
-    models = get_pretrained_models()
-    for model in models:
-        model.summary()
+    get_model(1)
     exit(0)
