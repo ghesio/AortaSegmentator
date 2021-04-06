@@ -102,28 +102,12 @@ for threshold in thresholds:
         prediction_combined[prediction_combined >= threshold] = 1
         try:
             axial_iou_score = calculate_iou_score(prediction=prediction_axial, ground_truth=roi_array)
-            if axial_iou_score > best_score:
-                best_score = axial_iou_score
-                best_view = 'axial'
-                best_threshold = threshold
             iou_map_axial[threshold].append(axial_iou_score)
             coronal_iou_score = calculate_iou_score(prediction=prediction_coronal, ground_truth=roi_array)
-            if coronal_iou_score > best_score:
-                best_score = coronal_iou_score
-                best_view = 'coronal'
-                best_threshold = threshold
             iou_map_coronal[threshold].append(coronal_iou_score)
             sagittal_iou_score = calculate_iou_score(prediction=prediction_sagittal, ground_truth=roi_array)
-            if sagittal_iou_score > best_score:
-                best_score = sagittal_iou_score
-                best_view = 'sagittal'
-                best_threshold = threshold
             iou_map_sagittal[threshold].append(sagittal_iou_score)
             combined_iou_score = calculate_iou_score(prediction=prediction_combined, ground_truth=roi_array)
-            if combined_iou_score > best_score:
-                best_score = combined_iou_score
-                best_view = 'combined'
-                best_threshold = threshold
             iou_map_combined[threshold].append(combined_iou_score)
             logging.info('IoU scores (axial, coronal, sagittal, combined): ' + str(axial_iou_score) + ' '
                          + str(coronal_iou_score) + ' ' + str(sagittal_iou_score) + ' ' + str(combined_iou_score))
@@ -142,21 +126,37 @@ with open(filename, 'w', newline='') as file:
                          round(float(np.mean(iou_map_axial[threshold])), 4),
                          round(float(np.std(iou_map_axial[threshold])), 4),
                          round(float(np.var(iou_map_axial[threshold])), 4)])
+        if round(float(np.mean(iou_map_axial[threshold])), 4) > best_score:
+            best_score = round(float(np.mean(iou_map_axial[threshold])), 4)
+            best_view = 'axial'
+            best_threshold = threshold
     for threshold in iou_map_coronal:
         writer.writerow([threshold, 'coronal', str(iou_map_coronal[threshold])[1:-1],
                          round(float(np.mean(iou_map_coronal[threshold])), 4),
                          round(float(np.std(iou_map_coronal[threshold])), 4),
                          round(float(np.var(iou_map_coronal[threshold])), 4)])
+        if round(float(np.mean(iou_map_coronal[threshold])), 4) > best_score:
+            best_score = round(float(np.mean(iou_map_coronal[threshold])), 4)
+            best_view = 'coronal'
+            best_threshold = threshold
     for threshold in iou_map_sagittal:
         writer.writerow([threshold, 'sagittal', str(iou_map_sagittal[threshold])[1:-1],
                          round(float(np.mean(iou_map_sagittal[threshold])), 4),
                          round(float(np.std(iou_map_sagittal[threshold])), 4),
                          round(float(np.var(iou_map_sagittal[threshold])), 4)])
+        if round(float(np.mean(iou_map_sagittal[threshold])), 4) > best_score:
+            best_score = round(float(np.mean(iou_map_sagittal[threshold])), 4)
+            best_view = 'sagittal'
+            best_threshold = threshold
     for threshold in iou_map_combined:
         writer.writerow([threshold, 'combined', str(iou_map_combined[threshold])[1:-1],
                          round(float(np.mean(iou_map_combined[threshold])), 4),
                          round(float(np.std(iou_map_combined[threshold])), 4),
                          round(float(np.var(iou_map_combined[threshold])), 4)])
+        if round(float(np.mean(iou_map_combined[threshold])), 4) > best_score:
+            best_score = round(float(np.mean(iou_map_combined[threshold])), 4)
+            best_view = 'combined'
+            best_threshold = threshold
 text_file = open('results/results_' + backbone + '_' + architecture + '_best.txt', 'w')
 text_file.write(str(best_view) + ' - ' + str(best_threshold) + ' - ' + str(best_score))
 text_file.close()
