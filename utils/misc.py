@@ -2,7 +2,7 @@
 import logging
 from utils import custom_logger
 import numpy as np
-
+import cv2
 
 def remove_everything_after_last(haystack, needle='/', n=1):
     """
@@ -58,6 +58,29 @@ def calculate_iou_score(prediction, ground_truth):
         return 0.0
     else:
         return intersection/union
+
+
+def calculate_intersection_on_prediction(roi_slice, prediction_slice):
+    # channel are in BGR order
+    to_return = np.zeros(shape=(np.shape(roi_slice)[0], np.shape(roi_slice)[1], 3))
+    intersection = cv2.bitwise_and(roi_slice/255, prediction_slice/255)
+    union = cv2.bitwise_or(roi_slice/255, prediction_slice/255)
+    left = union - prediction_slice/255
+    right = union - roi_slice/255
+    # set to white in intersection
+    blue = intersection * 255
+    green = intersection * 255
+    red = intersection * 255
+    # set to blue in left (pixel in roi but not in prediction)
+    blue = blue + left * 255
+    blue[blue == 510] = 255
+    # set to red in right (pixel in prediction but not in roi)
+    red = red + right * 255
+    red[red == 510] = 255
+    to_return[:, :, 0] = blue
+    to_return[:, :, 1] = green
+    to_return[:, :, 2] = red
+    return to_return
 
 
 if __name__ == "__main__":
