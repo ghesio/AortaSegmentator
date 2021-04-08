@@ -18,8 +18,8 @@ data_slices_root = "data/slices/"
 # define which network to train
 directions = ['axial', 'coronal', 'sagittal']
 # network parameter
-batch_size = 32
-epochs = 40
+batch_sizes = [32, 20, 15]
+max_epochs = 60
 preprocessor = get_preprocessor()
 
 
@@ -29,7 +29,9 @@ def zip_generator(image_data_generator, mask_data_generator):
         yield preprocessor(img[0]), mask[0] / 255
 
 
-for direction in directions:
+for i in range(len(directions)):
+    direction = directions[i]
+    batch_size = batch_sizes[i]
     train_scan_root = data_slices_root + 'train/' + direction + separator
     validation_scan_root = data_slices_root + 'validation/' + direction + separator
     test_scan_root = data_slices_root + 'test/' + direction + separator
@@ -110,14 +112,14 @@ for direction in directions:
         mode='min',
         save_best_only=True)
     # b) early stopping criteria
-    early_stopping_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', patience=5,
+    early_stopping_callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', patience=10,
                                                                restore_best_weights=True)
     # fit the model
     print('Training start @ ', datetime.now().strftime("%H:%M:%S"), ' - ', direction, ' - ', backbone, ' - ',
-          architecture)
+          architecture, ' - batch size: ', str(batch_size))
     history = model.fit(
         train_generator,
-        epochs=epochs,
+        epochs=max_epochs,
         validation_data=validation_generator,
         steps_per_epoch=number_of_train_samples // batch_size,
         validation_steps=number_of_validation_samples // batch_size,

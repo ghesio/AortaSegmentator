@@ -10,8 +10,7 @@ from keras.models import Model, load_model
 from keras.optimizers import Adam
 
 # define backbone for the networks
-backbone = 'resnet34'
-#backbone = 'seresnext101'
+backbone = 'resnet101'
 architecture = 'unet'  # unet, pspnet, linknet, fpn
 checkpoint_dir = 'checkpoints/'
 
@@ -37,7 +36,7 @@ def get_model(number_of_channel=1):
     # print model summary
     model.summary()
     # compile the model
-    opt = Adam()
+    opt = Adam(learning_rate=0.001)
     model.compile(optimizer=opt, loss=sm.losses.bce_jaccard_loss, metrics=[sm.metrics.iou_score])
     return model
 
