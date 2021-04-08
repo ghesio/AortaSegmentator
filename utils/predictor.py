@@ -97,10 +97,10 @@ def predict(dicom_location, out_dir, roi_dir=None):
         print('Saving combined intersection slices')
         du.save_prediction_slices(roi_array=roi_array, prediction=prediction_axial, root_dir=out_dir + '/combined')
         out = 'IoU scores\r\n'
-        out += 'Axial: ' + str(calculate_iou_score(prediction_axial, roi_array)) + '\r\n'
-        out += 'Coronal: ' + str(calculate_iou_score(prediction_coronal, roi_array)) + '\r\n'
-        out += 'Sagittal: ' + str(calculate_iou_score(prediction_sagittal, roi_array)) + '\r\n'
-        out += 'Combined: ' + str(calculate_iou_score(prediction_combined, roi_array)) + '\r\n'
+        out += 'Axial: ' + str(calculate_iou_score(prediction_axial/255, roi_array/255)) + '\r\n'
+        out += 'Coronal: ' + str(calculate_iou_score(prediction_coronal/255, roi_array/255)) + '\r\n'
+        out += 'Sagittal: ' + str(calculate_iou_score(prediction_sagittal/255, roi_array/255)) + '\r\n'
+        out += 'Combined: ' + str(calculate_iou_score(prediction_combined/255, roi_array/255)) + '\r\n'
         text_file = open(out_dir + '/scores.txt', 'w')
         text_file.write(out)
         text_file.close()
