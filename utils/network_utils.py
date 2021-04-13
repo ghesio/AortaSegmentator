@@ -55,9 +55,9 @@ def get_best_checkpoints():
         if 'sagittal' in file:
             scores.append(('sagittal', float(score_value)))
     # calculate best loss scores
-    axial_min_score = min((score for score in scores if score[0] is 'axial'), key=lambda scores: scores[1])[1]
-    coronal_min_score = min((score for score in scores if score[0] is 'coronal'), key=lambda scores: scores[1])[1]
-    sagittal_min_score = min((score for score in scores if score[0] is 'sagittal'), key=lambda scores: scores[1])[1]
+    axial_min_score = min((score for score in scores if score[0] == 'axial'), key=lambda scores: scores[1])[1]
+    coronal_min_score = min((score for score in scores if score[0] == 'coronal'), key=lambda scores: scores[1])[1]
+    sagittal_min_score = min((score for score in scores if score[0] == 'sagittal'), key=lambda scores: scores[1])[1]
     best_files = []
     for file in checkpoint_files:
         if 'axial' in file and str(axial_min_score) in file:
