@@ -26,7 +26,7 @@ preprocessor = get_preprocessor()
 def zip_generator(image_data_generator, mask_data_generator):
     zipped_generator = zip(image_data_generator, mask_data_generator)
     for (img, mask) in zipped_generator:
-        yield preprocessor(img[0]), mask[0] / 255
+        yield np.stack((preprocessor(img[0]),)*3, axis=-1), np.stack((mask[0]/255,)*3, axis=-1)
 
 
 for i in range(len(directions)):

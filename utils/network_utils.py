@@ -10,8 +10,8 @@ from keras.models import Model, load_model
 from keras.optimizers import Adam
 
 # define backbone for the networks
-backbone = 'resnet34'
-architecture = 'pspnet'  # unet, pspnet, linknet, fpn
+backbone = 'resnet101'
+architecture = 'linknet'  # unet, pspnet, linknet, fpn
 checkpoint_dir = 'checkpoints/'
 
 
@@ -19,7 +19,7 @@ def get_preprocessor():
     return sm.get_preprocessing(backbone)
 
 
-def get_model(number_of_channel=1):
+def get_model():
     # load model
     if architecture is 'fpn':
         base_model = sm.FPN(backbone, encoder_weights='imagenet')
@@ -29,10 +29,7 @@ def get_model(number_of_channel=1):
         base_model = sm.Linknet(backbone, encoder_weights='imagenet')
     else:
         base_model = sm.Unet(backbone, encoder_weights='imagenet')
-    inp = Input(shape=(None, None, number_of_channel))
-    l1 = Conv2D(3, (1, 1))(inp)  # map N channels data to 3 channels
-    out = base_model(l1)
-    model = Model(inp, out, name=base_model.name)
+    model = base_model
     # print model summary
     model.summary()
     # compile the model
@@ -78,5 +75,5 @@ def get_pretrained_models():
 
 
 if __name__ == "__main__":
-    get_model(1)
+    get_model()
     exit(0)
