@@ -63,16 +63,16 @@ for i in range(len(directories)):
     # predict axial value
     logging.info('Predicting axial values')
     for j in range(scan_array.shape[0]):
-        tf.expand_dims(np.stack((preprocessor(scan_array[j, :, :]),) * 3, axis=-1), axis=-1)
+        current = tf.expand_dims(np.stack((preprocessor(scan_array[j, :, :]),) * 3, axis=-1), axis=-1)
         prediction_axial[j, :, :] = models[0].predict(current).reshape(axial_shape)
     # predict coronal value
     logging.info('Predicting coronal values')
     for j in range(scan_array.shape[1]):
-        tf.expand_dims(np.stack((preprocessor(scan_array[:, j, :]),) * 3, axis=-1), axis=-1)
+        current = tf.expand_dims(np.stack((preprocessor(scan_array[:, j, :]),) * 3, axis=-1), axis=-1)
         prediction_coronal[:, j, :] = models[1].predict(current).reshape(coronal_shape)
     logging.info('Predicting sagittal values')
     for j in range(scan_array.shape[2]):
-        tf.expand_dims(np.stack((preprocessor(scan_array[:, :, j]),)*3,axis=-1), axis=-1)
+        current = tf.expand_dims(np.stack((preprocessor(scan_array[:, :, j]),)*3,axis=-1), axis=-1)
         prediction_sagittal[:, :, j] = models[2].predict(current).reshape(sagittal_shape)
     # combine the views and calculate IoU
     prediction_combined = (prediction_axial + prediction_coronal + prediction_coronal) / 3.0
@@ -158,6 +158,8 @@ with open(filename, 'w', newline='') as file:
             best_view = 'combined'
             best_threshold = threshold
 text_file = open('results/results_' + backbone + '_' + architecture + '_best.txt', 'w')
-text_file.write(str(best_view) + ' - ' + str(best_threshold) + ' - ' + str(best_score))
+out = str(best_view) + ' - ' + str(best_threshold) + ' - ' + str(best_score)
+text_file.write(out)
 text_file.close()
+print(out)
 exit(0)
