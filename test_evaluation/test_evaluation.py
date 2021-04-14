@@ -12,6 +12,15 @@ import csv
 import os
 from datetime import datetime
 
+# https://github.com/tensorflow/tensorflow/issues/43174
+# ???
+from tensorflow.compat.v1 import ConfigProto
+from tensorflow.compat.v1 import InteractiveSession
+
+config = ConfigProto()
+config.gpu_options.allow_growth = True
+session = InteractiveSession(config=config)
+
 # define threshold interval and delta
 threshold_interval = [0.6, 0.9]
 delta = 0.05
