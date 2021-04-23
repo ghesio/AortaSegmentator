@@ -83,8 +83,32 @@ def calculate_intersection_on_prediction(roi_slice, prediction_slice):
     return to_return
 
 
+def calculate_intersection_on_prediction_with_scan(scan_slice, roi_slice, prediction_slice):
+    # channel are in BGR order
+    to_return = cv2.merge((scan_slice, scan_slice, scan_slice))
+    intersection = cv2.bitwise_and(roi_slice/255, prediction_slice/255)
+    union = cv2.bitwise_or(roi_slice/255, prediction_slice/255)
+    left = union - prediction_slice/255
+    right = union - roi_slice/255
+    # set to white in intersection
+    blue = intersection * 255
+    green = intersection * 255
+    red = intersection * 255
+    # set to blue in left (pixel in roi but not in prediction)
+    blue = blue + left * 255
+    blue[blue == 510] = 255
+    # set to red in right (pixel in prediction but not in roi)
+    red = red + right * 255
+    red[red == 510] = 255
+    to_return[(blue == 255), 0] = 255
+    to_return[(green == 255), 1] = 255
+    to_return[(red == 255), 2] = 255
+    return to_return
+
+
 if __name__ == "__main__":
-    a = np.random.randint(2, size=(10, 10, 10))
-    b = a
-    assert calculate_iou_score(a, b) == 1.0
-    exit(0)
+    roi = cv2.imread('E:\\Tesi\\AortaSegmentator\\data\\slices\\test\\axial\\labels\\axial_00000118.png', cv2.IMREAD_GRAYSCALE)
+    prediction = cv2.imread('E:\\Tesi\\AortaSegmentator\\data\\slices\\test\\axial\\labels\\axial_00000131.png', cv2.IMREAD_GRAYSCALE)
+    scan = cv2.imread('E:\\Tesi\\AortaSegmentator\\data\\slices\\test\\axial\\scans\\axial_00000118.png',cv2.IMREAD_GRAYSCALE)
+    test = calculate_intersection_on_prediction_with_scan(scan, roi, prediction)
+    cv2.imwrite(filename="C:\\Users\\ghesio\\Desktop\\test.png", img=test)

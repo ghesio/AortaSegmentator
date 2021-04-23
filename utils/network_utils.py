@@ -11,7 +11,7 @@ from keras.optimizers import Adam
 
 # define backbone for the networks
 backbone = 'resnet34'
-architecture = 'pspnet'  # unet, pspnet, linknet, fpn
+architecture = 'unet'  # unet, pspnet, linknet, fpn
 checkpoint_dir = 'checkpoints/'
 
 

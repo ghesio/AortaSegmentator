@@ -1,5 +1,5 @@
 import json
-from utils.dicom_utils import convert_image_to_numpy_array
+from utils.dicom_utils import convert_image_to_numpy_array, save_prediction_slices_with_scan
 from utils.network_utils import get_pretrained_models, get_best_checkpoints, get_preprocessor, backbone, architecture
 import keras
 import numpy as np
@@ -13,8 +13,8 @@ import os
 from datetime import datetime
 
 # define threshold interval and delta
-threshold_interval = [0.6, 0.9]
-delta = 0.05
+threshold_interval = [0.3, 0.9]
+delta = 0.02
 # maps to store the IoU scores
 iou_map_axial = {}
 iou_map_coronal = {}
@@ -23,13 +23,21 @@ iou_map_combined = {}
 
 preprocessor = get_preprocessor()
 
-# get directories to load
-directories = []
+# get test directories to load
+test_directories = []
 with open('data/info.json') as f:
     patient_map = json.load(f)
     for patient in patient_map:
         if patient_map[patient]['partition'] == 'test':
-            directories.append((patient_map[patient]['scan_dir'], patient_map[patient]['roi_dir']))
+            test_directories.append((patient_map[patient]['scan_dir'], patient_map[patient]['roi_dir']))
+
+# get validation directories to load
+validation_directories = []
+with open('data/info.json') as f:
+    patient_map = json.load(f)
+    for patient in patient_map:
+        if patient_map[patient]['partition'] == 'validation':
+            validation_directories.append((patient_map[patient]['scan_dir'], patient_map[patient]['roi_dir']))
 equalization = True
 # load models [0] = axial, [1]=coronal, [2]=sagittal
 models = get_pretrained_models()
@@ -42,11 +50,11 @@ roi = []
 best_score = 0
 best_view = None
 best_threshold = None
-# iterate all directories
-for i in range(len(directories)):
-    logging.info('Loading directories ' + str(directories[i]))
-    scan_dir = str.replace(directories[i][0], 'out', 'in')
-    roi_dir = str.replace(directories[i][1], 'out', 'in')
+# iterate all directories in validation set
+for i in range(len(validation_directories)):
+    logging.info('Loading directories ' + str(validation_directories[i]))
+    scan_dir = str.replace(validation_directories[i][0], 'out', 'in')
+    roi_dir = str.replace(validation_directories[i][1], 'out', 'in')
     # load scan image
     scan_array = convert_image_to_numpy_array(input_dir=scan_dir, equalization=equalization, padding=True, roi=False)
     roi.append(convert_image_to_numpy_array(input_dir=roi_dir, equalization=equalization, padding=True, roi=True) / 255)
@@ -114,8 +122,8 @@ for threshold in thresholds:
         except ValueError:
             logging.exception("Error on shape")
             continue
-
-filename = 'results/results_' + backbone + '_' + architecture + '.tsv'
+os.makedirs('results/' + backbone + '_' + architecture)
+filename = 'results/' + backbone + '_' + architecture + '/results_validation.tsv'
 logging.info('Saving tsv file - ' + filename)
 with open(filename, 'w', newline='') as file:
     writer = csv.writer(file, delimiter='\t')
@@ -157,7 +165,76 @@ with open(filename, 'w', newline='') as file:
             best_score = round(float(np.mean(iou_map_combined[threshold])), 4)
             best_view = 'combined'
             best_threshold = threshold
-text_file = open('results/results_' + backbone + '_' + architecture + '_best.txt', 'w')
-text_file.write(str(best_view) + ' - ' + str(best_threshold) + ' - ' + str(best_score))
+text_file = open('results/' + backbone + '_' + architecture + '/results_best.txt', 'w')
+print(str(best_view) + ' - ' + str(best_threshold) + ' - ' + str(best_score))
+text_file.write('Validation  - ' + str(best_view) + ' - ' + str(best_threshold) + ' - ' + str(best_score))
 text_file.close()
+# iterate all directories in test set
+k = 0
+test_scores = []
+for i in range(len(test_directories)):
+    logging.info('Loading directories ' + str(test_directories[i]))
+    scan_dir = str.replace(test_directories[i][0], 'out', 'in')
+    roi_dir = str.replace(test_directories[i][1], 'out', 'in')
+    # load scan image
+    scan_array = convert_image_to_numpy_array(input_dir=scan_dir, equalization=equalization, padding=True, roi=False)
+    roi_array = convert_image_to_numpy_array(input_dir=roi_dir, equalization=equalization, padding=True, roi=True) / 255
+    axial_shape = scan_array[0, :, :].shape
+    coronal_shape = scan_array[:, 0, :].shape
+    sagittal_shape = scan_array[:, :, 0].shape
+    # get views
+    prediction_axial = np.empty(shape=scan_array.shape)
+    prediction_coronal = np.empty(shape=scan_array.shape)
+    prediction_sagittal = np.empty(shape=scan_array.shape)
+    prediction_combined = np.empty(shape=scan_array.shape)
+    # predict axial value
+    if best_view == 'axial' or best_view == 'combined':
+        logging.info('Predicting axial values')
+        for j in range(scan_array.shape[0]):
+            current = tf.expand_dims(tf.expand_dims(preprocessor(scan_array[j, :, :]), axis=-1), axis=0)
+            prediction_axial[j, :, :] = models[0].predict(current).reshape(axial_shape)
+        if best_view == 'axial':
+            prediction_axial[prediction_axial >= best_threshold] = 1
+            iou_score = calculate_iou_score(prediction=prediction_axial, ground_truth=roi_array)
+            test_scores.append(iou_score)
+            save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
+                                             prediction=prediction_axial,
+                                             root_dir='results/' + backbone + '_' + architecture + '/' + str(k))
+    if best_view == 'coronal' or best_view == 'combined':
+        # predict coronal value
+        logging.info('Predicting coronal values')
+        for j in range(scan_array.shape[1]):
+            current = tf.expand_dims(tf.expand_dims(preprocessor(scan_array[:, j, :]), axis=-1), axis=0)
+            prediction_coronal[:, j, :] = models[1].predict(current).reshape(coronal_shape)
+        if best_view == 'coronal':
+            prediction_coronal[prediction_coronal >= best_threshold] = 1
+            iou_score = calculate_iou_score(prediction=prediction_coronal, ground_truth=roi_array)
+            test_scores.append(iou_score)
+            save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
+                                             prediction=prediction_coronal,
+                                             root_dir='results/' + backbone + '_' + architecture + '/' + str(k))
+    if best_view == 'sagittal' or best_view == 'combined':
+        logging.info('Predicting sagittal values')
+        for j in range(scan_array.shape[2]):
+            current = tf.expand_dims(tf.expand_dims(preprocessor(scan_array[:, :, j]), axis=-1), axis=0)
+            prediction_sagittal[:, :, j] = models[2].predict(current).reshape(sagittal_shape)
+        if best_view == 'sagittal':
+            prediction_sagittal[prediction_sagittal >= best_threshold] = 1
+            iou_score = calculate_iou_score(prediction=prediction_sagittal, ground_truth=roi_array)
+            test_scores.append(iou_score)
+            save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
+                                             prediction=prediction_sagittal,
+                                             root_dir='results/' + backbone + '_' + architecture + '/' + str(k))
+    if best_view == 'combined':
+        # combine the views and calculate IoU
+        prediction_combined = (prediction_axial + prediction_coronal + prediction_coronal) / 3.0
+        prediction_combined[prediction_combined >= best_threshold] = 1
+        iou_score = calculate_iou_score(prediction=prediction_combined, ground_truth=roi_array)
+        test_scores.append(iou_score)
+        save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
+                                         prediction=prediction_combined,
+                                         root_dir='results/' + backbone + '_' + architecture + '/' + str(k))
+text_file = open('results/' + backbone + '_' + architecture + '/results_best.txt', 'a')
+text_file.write('\r\nTest results: ' + ' '.join([str(score) for score in test_scores]))
+text_file.write('\r\nTest average: ' + str(round(float(np.mean(test_scores)), 4)))
 exit(0)
