@@ -21,11 +21,11 @@ def get_preprocessor():
 
 def get_model(number_of_channel=1):
     # load model
-    if architecture is 'fpn':
+    if architecture == 'fpn':
         base_model = sm.FPN(backbone, encoder_weights='imagenet')
-    elif architecture is 'pspnet':
+    elif architecture == 'pspnet':
         base_model = sm.PSPNet(backbone, encoder_weights='imagenet')
-    elif architecture is 'linknet':
+    elif architecture == 'linknet':
         base_model = sm.Linknet(backbone, encoder_weights='imagenet')
     else:
         base_model = sm.Unet(backbone, encoder_weights='imagenet')

@@ -234,6 +234,7 @@ for i in range(len(test_directories)):
         save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
                                          prediction=prediction_combined,
                                          root_dir='results/' + backbone + '_' + architecture + '/' + str(k))
+    k = k + 1
 text_file = open('results/' + backbone + '_' + architecture + '/results_best.txt', 'a')
 text_file.write('\r\nTest results: ' + ' '.join([str(score) for score in test_scores]))
 text_file.write('\r\nTest average: ' + str(round(float(np.mean(test_scores)), 4)))
