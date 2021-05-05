@@ -1,5 +1,5 @@
 import json
-from utils.dicom_utils import convert_image_to_numpy_array, save_prediction_slices_with_scan
+from utils.dicom_utils import convert_image_to_numpy_array, save_prediction_slices_with_scan, preprocess_slice
 from utils.network_utils import get_pretrained_models, get_best_checkpoints, get_preprocessor, backbone, architecture
 import keras
 import numpy as np
@@ -38,7 +38,6 @@ with open('data/info.json') as f:
     for patient in patient_map:
         if patient_map[patient]['partition'] == 'validation':
             validation_directories.append((patient_map[patient]['scan_dir'], patient_map[patient]['roi_dir']))
-equalization = True
 # load models [0] = axial, [1]=coronal, [2]=sagittal
 models = get_pretrained_models()
 # vectors to store the predictions on file system
@@ -56,8 +55,12 @@ for i in range(len(validation_directories)):
     scan_dir = str.replace(validation_directories[i][0], 'out', 'in')
     roi_dir = str.replace(validation_directories[i][1], 'out', 'in')
     # load scan image
-    scan_array = convert_image_to_numpy_array(input_dir=scan_dir, equalization=equalization, padding=True, roi=False)
-    roi.append(convert_image_to_numpy_array(input_dir=roi_dir, equalization=equalization, padding=True, roi=True) / 255)
+    scan_array = convert_image_to_numpy_array(input_dir=scan_dir)
+    roi_array = convert_image_to_numpy_array(input_dir=roi_dir, roi=True)
+    # preprocess every slice
+    for ii in range(roi_array.shape[0]):
+        scan_array[ii, :, :] = preprocess_slice(scan_array[ii, :, :], roi_array[ii, :, :])
+    roi.append(roi_array / 255)
     axial_shape = scan_array[0, :, :].shape
     coronal_shape = scan_array[:, 0, :].shape
     sagittal_shape = scan_array[:, :, 0].shape
@@ -177,8 +180,12 @@ for i in range(len(test_directories)):
     scan_dir = str.replace(test_directories[i][0], 'out', 'in')
     roi_dir = str.replace(test_directories[i][1], 'out', 'in')
     # load scan image
-    scan_array = convert_image_to_numpy_array(input_dir=scan_dir, equalization=equalization, padding=True, roi=False)
-    roi_array = convert_image_to_numpy_array(input_dir=roi_dir, equalization=equalization, padding=True, roi=True) / 255
+    scan_array = convert_image_to_numpy_array(input_dir=scan_dir)
+    roi_array = convert_image_to_numpy_array(input_dir=roi_dir, roi=True)
+    # preprocess every slice
+    for i in range(roi_array.shape[0]):
+        scan_array[i, :, :] = preprocess_slice(scan_array[i, :, :], roi_array[i, :, :])
+    roi_array = roi_array / 255
     axial_shape = scan_array[0, :, :].shape
     coronal_shape = scan_array[:, 0, :].shape
     sagittal_shape = scan_array[:, :, 0].shape

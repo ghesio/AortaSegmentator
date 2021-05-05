@@ -8,9 +8,13 @@ import numpy as np
 from utils import custom_logger
 import logging
 from utils.misc import convert_img, calculate_intersection_on_prediction, calculate_intersection_on_prediction_with_scan
+from skimage.exposure import match_histograms
 
 
-def convert_image_to_numpy_array(input_dir, equalization=True, padding=True, roi=False):
+clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4,4))
+
+
+def convert_image_to_numpy_array(input_dir, padding=True, roi=False):
     # Instantiate a DICOM reader
     reader = sitk.ImageSeriesReader()
     dicom_names = reader.GetGDCMSeriesFileNames(input_dir)
@@ -41,10 +45,6 @@ def convert_image_to_numpy_array(input_dir, equalization=True, padding=True, roi
     orientation_filter = sitk.DICOMOrientImageFilter()
     orientation_filter.SetDesiredCoordinateOrientation(DesiredCoordinateOrientation='RAI')
     image = orientation_filter.Execute(image)
-    # Equalization of the image, this may be slow
-    if equalization and not roi:
-        logging.info('Equalization of the image')
-        sitk.AdaptiveHistogramEqualization(image)
     # Convert to numpy array
     # !!CARE!! the indexing is image_array[z,y,x]
     image_array = sitk.GetArrayFromImage(image)
@@ -70,27 +70,9 @@ def convert_image_to_numpy_array(input_dir, equalization=True, padding=True, roi
     image_array = convert_img(image_array)
     if padding:
         # pad all direction to 32 px multiplier
-        i = 1
-        while True:
-            if image_array.shape[0] < 32 * i:
-                new_side_z = int(32 * i)
-                break
-            else:
-                i = i + 1
-        i = 1
-        while True:
-            if image_array.shape[1] < 32 * i:
-                new_side_y = int(32 * i)
-                break
-            else:
-                i = i + 1
-        i = 1
-        while True:
-            if image_array.shape[2] < 32 * i:
-                new_side_x = int(32 * i)
-                break
-            else:
-                i = i + 1
+        new_side_x = int(32 * math.ceil(float(image_array.shape[2]) / 32))
+        new_side_y = int(32 * math.ceil(float(image_array.shape[1]) / 32))
+        new_side_z = int(32 * math.ceil(float(image_array.shape[0]) / 32))
         # center the image by adding black (0) background
         padding_delta_z = (new_side_z - image_array.shape[0]) / 2
         padding_delta_y = (new_side_y - image_array.shape[1]) / 2
@@ -149,7 +131,6 @@ def save_slices(direction, image_array, root_dir):
         logging.warning('Directory ' + save_directory + ' already exists. Exiting.')
         return
     os.makedirs(save_directory)
-    # get max and min value for rescaling
     __range = None
     if direction == 'axial':
         __range = image_array.shape[0]
@@ -160,7 +141,7 @@ def save_slices(direction, image_array, root_dir):
     logging.info('Start saving ' + direction + ' view in ' + save_directory)
     last_progress = None
     for i in range(__range):
-        if math.floor(i * 100 / __range) % 10 == 0 and math.floor(i * 100 / __range) != \
+        if math.floor(i * 100 / __range) % 20 == 0 and math.floor(i * 100 / __range) != \
                 last_progress:
             logging.info(str(math.floor(i * 100 / __range)) + ' %')
             last_progress = math.floor(i * 100 / __range)
@@ -181,46 +162,7 @@ def save_slices(direction, image_array, root_dir):
             if status is False:
                 logging.error('Error saving image. Path:' + output_file_name + " - image shape: " +
                               output_file_name.shape)
-
-
-def save_prediction_slices(roi_array, prediction, root_dir):
-    directions = ('axial', 'coronal', 'sagittal')
-    for direction in directions:
-        save_directory = root_dir + '/' + direction + '/'
-        if os.path.exists(save_directory):
-            logging.warning('Directory ' + save_directory + ' already exists. Exiting.')
-            return
-        os.makedirs(save_directory)
-        # get max and min value for rescaling
-        __range = None
-        if direction == 'axial':
-            __range = roi_array.shape[0]
-        elif direction == 'coronal':
-            __range = roi_array.shape[1]
-        else:
-            __range = roi_array.shape[2]
-        logging.info('Start saving ' + direction + ' view in ' + save_directory)
-        for i in range(__range):
-            output_file_name = save_directory + direction + '_' + str(i).zfill(4) + '.png'
-            logging.debug('Saving image to ' + output_file_name)
-            if direction == 'axial':
-                to_save = calculate_intersection_on_prediction(roi_array[i, :, :], prediction[i, :, :])
-                status = cv2.imwrite(filename=output_file_name, img=to_save)
-                if status is False:
-                    logging.error('Error saving image. Path:' + output_file_name + " - image shape: " +
-                                  output_file_name.shape)
-            elif direction == 'coronal':
-                to_save = calculate_intersection_on_prediction(roi_array[:, i, :], prediction[:, i, :])
-                status = cv2.imwrite(filename=output_file_name, img=to_save)
-                if status is False:
-                    logging.error('Error saving image. Path:' + output_file_name + " - image shape: " +
-                                  output_file_name.shape)
-            else:
-                to_save = calculate_intersection_on_prediction(roi_array[:, :, i], prediction[:, :, i])
-                status = cv2.imwrite(filename=output_file_name, img=to_save),
-                if status is False:
-                    logging.error('Error saving image. Path:' + output_file_name + " - image shape: " +
-                                  output_file_name.shape)
+    logging.info('100 %')
 
 
 def save_prediction_slices_with_scan(best_direction, scan_array, roi_array, prediction, root_dir):
@@ -238,7 +180,6 @@ def save_prediction_slices_with_scan(best_direction, scan_array, roi_array, pred
             logging.warning('Directory ' + save_directory + ' already exists. Exiting.')
             return
         os.makedirs(save_directory)
-        # get max and min value for rescaling
         __range = None
         if direction == 'axial':
             __range = roi_array.shape[0]
@@ -271,3 +212,10 @@ def save_prediction_slices_with_scan(best_direction, scan_array, roi_array, pred
                 if status is False:
                     logging.error('Error saving image. Path:' + output_file_name + " - image shape: " +
                                   output_file_name.shape)
+
+
+def preprocess_slice(scan_slice, roi_slice):
+    clahe_img = clahe.apply(scan_slice)
+    if roi_slice is not None:
+        clahe_img[roi_slice == 255] = 255
+    return clahe_img

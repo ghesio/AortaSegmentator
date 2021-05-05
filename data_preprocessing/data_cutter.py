@@ -14,6 +14,7 @@ data_out_path = 'data/slices/'
 directions = ['axial', 'coronal', 'sagittal']
 separator = "/"
 
+
 def cut(directory, direction, partition, min_index, max_index):
     dir_files = [x for x in os.listdir(directory + separator + direction) if '.png' in x]
     dir_files.sort()
@@ -126,27 +127,9 @@ if __name__ == "__main__":
     center_y = math.ceil((max_y + min_y) / 2)
     center_z = math.ceil((max_z + min_z) / 2)
     logging.info('Buonding box center: (x,y,z) ' + str(center_x) + 'x' + str(center_y) + 'x' + str(center_z))
-    i = 1
-    while True:
-        if side_x < 32 * i:
-            new_side_x = int(32 * i)
-            break
-        else:
-            i = i + 1
-    i = 1
-    while True:
-        if side_y < 32 * i:
-            new_side_y = int(32 * i)
-            break
-        else:
-            i = i + 1
-    i = 1
-    while True:
-        if side_z < 32 * i:
-            new_side_z = int(32 * i)
-            break
-        else:
-            i = i + 1
+    new_side_x = int(32 * math.ceil(float(side_x) / 32))
+    new_side_y = int(32 * math.ceil(float(side_y) / 32))
+    new_side_z = int(32 * math.ceil(float(side_z) / 32))
 
     lower_x = center_x - int(new_side_x / 2)
     if lower_x < 0:

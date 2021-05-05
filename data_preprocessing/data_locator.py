@@ -60,25 +60,22 @@ def read_image_information_in_directory(directory):
 				bound[0] = i + 1
 			if not np.all(current_image == background_color) and np.all(next_image == background_color):
 				bound[1] = i + 1
-			for j in range(current_image.shape[0]):
-				for k in range(current_image.shape[1]):
-					pixel = current_image[j][k]
-					if pixel != background_color:
-						if j < min_info[0]:
-							min_info[0] = j
-						if k < min_info[1]:
-							min_info[1] = k
-						if j > max_info[0]:
-							max_info[0] = j
-						if k > max_info[1]:
-							max_info[1] = k
+			rows, cols = np.where(current_image != background_color)
+			if min(rows) < min_info[0]:
+				min_info[0] = min(rows)
+			if min(cols) < min_info[1]:
+				min_info[1] = min(cols)
+			if max(rows) > max_info[0]:
+				max_info[0] = max(rows)
+			if min(cols) > max_info[1]:
+				max_info[1] = max(cols)
 	if bound[1] is None:
 		bound[1] = len(__files) + 1
 	return bound, min_info, max_info
 
 
 if __name__ == "__main__":
-	# read all directory in '...data/out'
+	# read all directory in '..data/out'
 	dir_names = []
 	for root, dirs, files in os.walk(data_out_dir):
 		if not dirs:
@@ -91,8 +88,6 @@ if __name__ == "__main__":
 			patient_map[patient_id] = {}
 			patient_map[patient_id]['coordinates'] = {}
 		# ignore if cut directory
-		if 'cut' in _dir:
-			continue
 		if 'roi' in _dir:
 			# get information about informative images in 'roi' dir
 			patient_map[patient_id]['roi_dir'] = remove_everything_after_last(_dir, separator)
@@ -101,23 +96,23 @@ if __name__ == "__main__":
 			if 'axial' in _dir:
 				# Y-X plane
 				patient_map[patient_id]['axial'] = {}
-				patient_map[patient_id]['axial']['min_slice'] = info[0][0]
-				patient_map[patient_id]['axial']['max_slice'] = info[0][1]
-				patient_map[patient_id]['coordinates']['min_y'] = info[1][0]
-				patient_map[patient_id]['coordinates']['min_x'] = info[1][1]
-				patient_map[patient_id]['coordinates']['max_y'] = info[2][0]
-				patient_map[patient_id]['coordinates']['max_x'] = info[2][1]
+				patient_map[patient_id]['axial']['min_slice'] = int(info[0][0])
+				patient_map[patient_id]['axial']['max_slice'] = int(info[0][1])
+				patient_map[patient_id]['coordinates']['min_y'] = int(info[1][0])
+				patient_map[patient_id]['coordinates']['min_x'] = int(info[1][1])
+				patient_map[patient_id]['coordinates']['max_y'] = int(info[2][0])
+				patient_map[patient_id]['coordinates']['max_x'] = int(info[2][1])
 			elif 'coronal' in _dir:
 				# Z-X plane
 				patient_map[patient_id]['coronal'] = {}
-				patient_map[patient_id]['coronal']['min_slice'] = info[0][0]
-				patient_map[patient_id]['coronal']['max_slice'] = info[0][1]
-				patient_map[patient_id]['coordinates']['min_z'] = info[1][0]
-				patient_map[patient_id]['coordinates']['max_z'] = info[2][0]
+				patient_map[patient_id]['coronal']['min_slice'] = int(info[0][0])
+				patient_map[patient_id]['coronal']['max_slice'] = int(info[0][1])
+				patient_map[patient_id]['coordinates']['min_z'] = int(info[1][0])
+				patient_map[patient_id]['coordinates']['max_z'] = int(info[2][0])
 			elif 'sagittal' in _dir:
 				patient_map[patient_id]['sagittal'] = {}
-				patient_map[patient_id]['sagittal']['min_slice'] = info[0][0]
-				patient_map[patient_id]['sagittal']['max_slice'] = info[0][1]
+				patient_map[patient_id]['sagittal']['min_slice'] = int(info[0][0])
+				patient_map[patient_id]['sagittal']['max_slice'] = int(info[0][1])
 		else:
 			patient_map[patient_id]['scan_dir'] = remove_everything_after_last(_dir, separator)
 	# define to which set of data the patients belongs to (train, validation, test)
