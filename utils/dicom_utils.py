@@ -8,7 +8,6 @@ import numpy as np
 from utils import custom_logger
 import logging
 from utils.misc import convert_img, calculate_intersection_on_prediction, calculate_intersection_on_prediction_with_scan
-from skimage.exposure import match_histograms
 
 
 clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4,4))
@@ -217,5 +216,6 @@ def save_prediction_slices_with_scan(best_direction, scan_array, roi_array, pred
 def preprocess_slice(scan_slice, roi_slice):
     clahe_img = clahe.apply(scan_slice)
     if roi_slice is not None:
-        clahe_img[roi_slice == 255] = 255
+        pass
+        #clahe_img[roi_slice == 255] = 255
     return clahe_img

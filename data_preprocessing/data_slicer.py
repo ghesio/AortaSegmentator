@@ -29,9 +29,9 @@ def convert_dicom(patient):
     roi_array = convert_image_to_numpy_array(roi_dir, roi=True)
     scan_array = convert_image_to_numpy_array(scan_dir)
 
-    if roi_array.shape != scan_array.shape:
-        logging.error('Mimatching shape for patient ' + patient)
-        return
+    #if roi_array.shape != scan_array.shape:
+    #    logging.error('Mimatching shape for patient ' + patient)
+    #    return
 
     # preprocess every slice
     for i in range(roi_array.shape[0]):
