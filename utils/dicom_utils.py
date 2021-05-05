@@ -213,9 +213,6 @@ def save_prediction_slices_with_scan(best_direction, scan_array, roi_array, pred
                                   output_file_name.shape)
 
 
-def preprocess_slice(scan_slice, roi_slice):
+def preprocess_slice(scan_slice):
     clahe_img = clahe.apply(scan_slice)
-    if roi_slice is not None:
-        pass
-        #clahe_img[roi_slice == 255] = 255
     return clahe_img

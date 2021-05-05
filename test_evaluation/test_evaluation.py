@@ -59,7 +59,7 @@ for i in range(len(validation_directories)):
     roi_array = convert_image_to_numpy_array(input_dir=roi_dir, roi=True)
     # preprocess every slice
     for ii in range(roi_array.shape[0]):
-        scan_array[ii, :, :] = preprocess_slice(scan_array[ii, :, :], roi_array[ii, :, :])
+        scan_array[ii, :, :] = preprocess_slice(scan_array[ii, :, :])
     roi.append(roi_array / 255)
     axial_shape = scan_array[0, :, :].shape
     coronal_shape = scan_array[:, 0, :].shape
@@ -184,7 +184,7 @@ for i in range(len(test_directories)):
     roi_array = convert_image_to_numpy_array(input_dir=roi_dir, roi=True)
     # preprocess every slice
     for i in range(roi_array.shape[0]):
-        scan_array[i, :, :] = preprocess_slice(scan_array[i, :, :], roi_array[i, :, :])
+        scan_array[i, :, :] = preprocess_slice(scan_array[i, :, :])
     roi_array = roi_array / 255
     axial_shape = scan_array[0, :, :].shape
     coronal_shape = scan_array[:, 0, :].shape

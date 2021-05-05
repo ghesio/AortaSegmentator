@@ -29,13 +29,9 @@ def convert_dicom(patient):
     roi_array = convert_image_to_numpy_array(roi_dir, roi=True)
     scan_array = convert_image_to_numpy_array(scan_dir)
 
-    #if roi_array.shape != scan_array.shape:
-    #    logging.error('Mimatching shape for patient ' + patient)
-    #    return
-
     # preprocess every slice
     for i in range(roi_array.shape[0]):
-        scan_array[i, :, :] = preprocess_slice(scan_array[i, :, :], roi_array[i, :, :])
+        scan_array[i, :, :] = preprocess_slice(scan_array[i, :, :])
 
     # Save scan slices
     # AXIAL
