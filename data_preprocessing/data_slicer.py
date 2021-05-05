@@ -31,7 +31,10 @@ def convert_dicom(patient):
 
     # preprocess every slice
     for i in range(roi_array.shape[0]):
-        scan_array[i, :, :] = preprocess_slice(scan_array[i, :, :])
+        try:
+            scan_array[i, :, :] = preprocess_slice(scan_array[i, :, :])
+        except IndexError:
+            continue
 
     # Save scan slices
     # AXIAL
