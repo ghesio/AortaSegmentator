@@ -91,14 +91,14 @@ def calculate_intersection_on_prediction_with_scan(scan_slice, roi_slice, predic
     left = union - prediction_slice
     right = union - roi_slice
     # set to white in intersection
-    blue = intersection
-    green = intersection
-    red = intersection
+    blue = intersection * 255
+    green = intersection * 255
+    red = intersection * 255
     # set to blue in left (pixel in roi but not in prediction)
-    blue = blue + left
+    blue = blue + left * 255
     blue[blue == 510] = 255
     # set to red in right (pixel in prediction but not in roi)
-    red = red + right
+    red = red + right * 255
     red[red == 510] = 255
     to_return[(blue == 255), 0] = 255
     to_return[(green == 255), 1] = 255
