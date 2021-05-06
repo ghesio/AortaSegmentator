@@ -191,21 +191,21 @@ def save_prediction_slices_with_scan(best_direction, scan_array, roi_array, pred
             output_file_name = save_directory + direction + '_' + str(i).zfill(4) + '.png'
             logging.debug('Saving image to ' + output_file_name)
             if direction == 'axial':
-                to_save = calculate_intersection_on_prediction_with_scan(scan_array[i, :, :], roi_array[i, :, :],
+                to_save = calculate_intersection_on_prediction_with_scan(scan_array[i, :, :], roi_array[i, :, :] * 255,
                                                                          prediction[i, :, :])
                 status = cv2.imwrite(filename=output_file_name, img=to_save)
                 if status is False:
                     logging.error('Error saving image. Path:' + output_file_name + " - image shape: " +
                                   output_file_name.shape)
             elif direction == 'coronal':
-                to_save = calculate_intersection_on_prediction_with_scan(scan_array[:, i, :], roi_array[:, i, :],
+                to_save = calculate_intersection_on_prediction_with_scan(scan_array[:, i, :], roi_array[:, i, :] * 255,
                                                                          prediction[:, i, :])
                 status = cv2.imwrite(filename=output_file_name, img=to_save)
                 if status is False:
                     logging.error('Error saving image. Path:' + output_file_name + " - image shape: " +
                                   output_file_name.shape)
             else:
-                to_save = calculate_intersection_on_prediction_with_scan(scan_array[:, :, i], roi_array[:, :, i],
+                to_save = calculate_intersection_on_prediction_with_scan(scan_array[:, :, i], roi_array[:, :, i]  * 255,
                                                                          prediction[:, :, i])
                 status = cv2.imwrite(filename=output_file_name, img=to_save),
                 if status is False:
