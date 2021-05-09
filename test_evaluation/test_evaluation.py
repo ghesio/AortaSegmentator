@@ -23,21 +23,18 @@ iou_map_combined = {}
 
 preprocessor = get_preprocessor()
 
-# get test directories to load
+# get test and validation directories to load
 test_directories = []
+validation_directories = []
+
 with open('data/info.json') as f:
     patient_map = json.load(f)
     for patient in patient_map:
         if patient_map[patient]['partition'] == 'test':
             test_directories.append((patient_map[patient]['scan_dir'], patient_map[patient]['roi_dir']))
-
-# get validation directories to load
-validation_directories = []
-with open('data/info.json') as f:
-    patient_map = json.load(f)
-    for patient in patient_map:
         if patient_map[patient]['partition'] == 'validation':
             validation_directories.append((patient_map[patient]['scan_dir'], patient_map[patient]['roi_dir']))
+
 # load models [0] = axial, [1]=coronal, [2]=sagittal
 models = get_pretrained_models()
 # vectors to store the predictions on file system
@@ -202,6 +199,7 @@ for i in range(len(test_directories)):
             prediction_axial[j, :, :] = models[0].predict(current).reshape(axial_shape)
         if best_view == 'axial':
             prediction_axial[prediction_axial >= best_threshold] = 1
+            prediction_axial[prediction_axial != 1] = 0
             iou_score = calculate_iou_score(prediction=prediction_axial, ground_truth=roi_array)
             test_scores.append(iou_score)
             save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
@@ -215,6 +213,7 @@ for i in range(len(test_directories)):
             prediction_coronal[:, j, :] = models[1].predict(current).reshape(coronal_shape)
         if best_view == 'coronal':
             prediction_coronal[prediction_coronal >= best_threshold] = 1
+            prediction_coronal[prediction_coronal != 1] = 0
             iou_score = calculate_iou_score(prediction=prediction_coronal, ground_truth=roi_array)
             test_scores.append(iou_score)
             save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
@@ -227,6 +226,7 @@ for i in range(len(test_directories)):
             prediction_sagittal[:, :, j] = models[2].predict(current).reshape(sagittal_shape)
         if best_view == 'sagittal':
             prediction_sagittal[prediction_sagittal >= best_threshold] = 1
+            prediction_sagittal[prediction_sagittal != 1] = 0
             iou_score = calculate_iou_score(prediction=prediction_sagittal, ground_truth=roi_array)
             test_scores.append(iou_score)
             save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
@@ -236,6 +236,7 @@ for i in range(len(test_directories)):
         # combine the views and calculate IoU
         prediction_combined = (prediction_axial + prediction_coronal + prediction_coronal) / 3.0
         prediction_combined[prediction_combined >= best_threshold] = 1
+        prediction_combined[prediction_combined != 1] = 0
         iou_score = calculate_iou_score(prediction=prediction_combined, ground_truth=roi_array)
         test_scores.append(iou_score)
         save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
