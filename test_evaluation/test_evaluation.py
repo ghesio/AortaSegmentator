@@ -1,5 +1,6 @@
 import json
-from utils.dicom_utils import convert_image_to_numpy_array, save_prediction_slices_with_scan, preprocess_slice
+from utils.dicom_utils import convert_image_to_numpy_array, save_prediction_slices_with_scan, preprocess_slice, \
+    postprocess_prediticion
 from utils.network_utils import get_pretrained_models, get_best_checkpoints, get_preprocessor, backbone, architecture
 import keras
 import numpy as np
@@ -108,14 +109,22 @@ for threshold in thresholds:
         prediction_coronal[prediction_coronal >= threshold] = 1
         prediction_sagittal[prediction_sagittal >= threshold] = 1
         prediction_combined[prediction_combined >= threshold] = 1
+        prediction_axial[prediction_axial != 1] = 0
+        prediction_axial[prediction_axial != 1] = 0
+        prediction_sagittal[prediction_axial != 1] = 0
+        prediction_combined[prediction_axial != 1] = 0
         try:
-            axial_iou_score = calculate_iou_score(prediction=prediction_axial, ground_truth=roi_array)
+            axial_iou_score = calculate_iou_score(prediction=postprocess_prediticion(prediction_axial),
+                                                  ground_truth=roi_array)
             iou_map_axial[threshold].append(axial_iou_score)
-            coronal_iou_score = calculate_iou_score(prediction=prediction_coronal, ground_truth=roi_array)
+            coronal_iou_score = calculate_iou_score(prediction=postprocess_prediticion(prediction_coronal),
+                                                    ground_truth=roi_array)
             iou_map_coronal[threshold].append(coronal_iou_score)
-            sagittal_iou_score = calculate_iou_score(prediction=prediction_sagittal, ground_truth=roi_array)
+            sagittal_iou_score = calculate_iou_score(prediction=postprocess_prediticion(prediction_sagittal),
+                                                     ground_truth=roi_array)
             iou_map_sagittal[threshold].append(sagittal_iou_score)
-            combined_iou_score = calculate_iou_score(prediction=prediction_combined, ground_truth=roi_array)
+            combined_iou_score = calculate_iou_score(prediction=postprocess_prediticion(prediction_combined),
+                                                     ground_truth=roi_array)
             iou_map_combined[threshold].append(combined_iou_score)
             logging.info('IoU scores (axial, coronal, sagittal, combined): ' + str(axial_iou_score) + ' '
                          + str(coronal_iou_score) + ' ' + str(sagittal_iou_score) + ' ' + str(combined_iou_score))
@@ -200,6 +209,7 @@ for i in range(len(test_directories)):
         if best_view == 'axial':
             prediction_axial[prediction_axial >= best_threshold] = 1
             prediction_axial[prediction_axial != 1] = 0
+            prediction_axial = postprocess_prediticion(prediction_axial)
             iou_score = calculate_iou_score(prediction=prediction_axial, ground_truth=roi_array)
             test_scores.append(iou_score)
             save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
@@ -214,6 +224,7 @@ for i in range(len(test_directories)):
         if best_view == 'coronal':
             prediction_coronal[prediction_coronal >= best_threshold] = 1
             prediction_coronal[prediction_coronal != 1] = 0
+            prediction_coronal = postprocess_prediticion(prediction_coronal)
             iou_score = calculate_iou_score(prediction=prediction_coronal, ground_truth=roi_array)
             test_scores.append(iou_score)
             save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
@@ -227,6 +238,7 @@ for i in range(len(test_directories)):
         if best_view == 'sagittal':
             prediction_sagittal[prediction_sagittal >= best_threshold] = 1
             prediction_sagittal[prediction_sagittal != 1] = 0
+            prediction_sagittal = postprocess_prediticion(prediction_sagittal)
             iou_score = calculate_iou_score(prediction=prediction_sagittal, ground_truth=roi_array)
             test_scores.append(iou_score)
             save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
@@ -237,6 +249,7 @@ for i in range(len(test_directories)):
         prediction_combined = (prediction_axial + prediction_coronal + prediction_coronal) / 3.0
         prediction_combined[prediction_combined >= best_threshold] = 1
         prediction_combined[prediction_combined != 1] = 0
+        prediction_combined = postprocess_prediticion(prediction_combined)
         iou_score = calculate_iou_score(prediction=prediction_combined, ground_truth=roi_array)
         test_scores.append(iou_score)
         save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,

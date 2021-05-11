@@ -216,3 +216,26 @@ def save_prediction_slices_with_scan(best_direction, scan_array, roi_array, pred
 def preprocess_slice(scan_slice):
     clahe_img = clahe.apply(scan_slice)
     return clahe_img
+
+
+def postprocess_prediticion(prediction_array, radius=3, majority_voting=False, threshold=0.7):
+    postprocessed = np.zeros(prediction_array.shape)
+    offset = (radius + 1) // 2
+    for i in range(offset, prediction_array.shape[0] - offset):
+        for j in range(offset, prediction_array.shape[1] - offset):
+            for k in range(offset, prediction_array.shape[2] - offset):
+                # sliding cube will have shape (radius + 2, radius + 2, radius + 2)
+                window = prediction_array[i - offset:i + offset + 1, j - offset:j + offset + 1, k - offset:k + offset + 1]
+                if majority_voting:
+                    # if majority of pixel in the cube is 1 we correctly have a prediction
+                    count = np.count_nonzero(window.flatten() == 1)
+                    if (count / ((radius + 2) * (radius + 2) * (radius + 2))) > threshold:
+                        postprocessed[i][j][k] = 1
+                else:
+                    # we check along the three axis if all of them are 1
+                    z_axis = window[(radius + 2)//2, (radius + 2)//2, :]
+                    y_axis = window[(radius + 2)//2, :, (radius + 2)//2]
+                    x_axis = window[:, (radius + 2)//2, (radius + 2)//2]
+                    if np.all(z_axis == 1) and np.all(y_axis == 1) and np.all(x_axis == 1):
+                        postprocessed[i][j][k] = 1
+    return postprocessed
