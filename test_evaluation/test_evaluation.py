@@ -114,16 +114,16 @@ for threshold in thresholds:
         prediction_sagittal[prediction_axial != 1] = 0
         prediction_combined[prediction_axial != 1] = 0
         try:
-            axial_iou_score = calculate_iou_score(prediction=postprocess_prediticion(prediction_axial),
+            axial_iou_score = calculate_iou_score(prediction=prediction_axial,
                                                   ground_truth=roi_array)
             iou_map_axial[threshold].append(axial_iou_score)
-            coronal_iou_score = calculate_iou_score(prediction=postprocess_prediticion(prediction_coronal),
+            coronal_iou_score = calculate_iou_score(prediction=prediction_coronal,
                                                     ground_truth=roi_array)
             iou_map_coronal[threshold].append(coronal_iou_score)
-            sagittal_iou_score = calculate_iou_score(prediction=postprocess_prediticion(prediction_sagittal),
+            sagittal_iou_score = calculate_iou_score(prediction=prediction_sagittal,
                                                      ground_truth=roi_array)
             iou_map_sagittal[threshold].append(sagittal_iou_score)
-            combined_iou_score = calculate_iou_score(prediction=postprocess_prediticion(prediction_combined),
+            combined_iou_score = calculate_iou_score(prediction=prediction_combined,
                                                      ground_truth=roi_array)
             iou_map_combined[threshold].append(combined_iou_score)
             logging.info('IoU scores (axial, coronal, sagittal, combined): ' + str(axial_iou_score) + ' '
@@ -181,6 +181,9 @@ text_file.close()
 # iterate all directories in test set
 k = 0
 test_scores = []
+test_scores_coherence = []
+test_scores_majority = []
+
 for i in range(len(test_directories)):
     logging.info('Loading directories ' + str(test_directories[i]))
     scan_dir = str.replace(test_directories[i][0], 'out', 'in')
@@ -209,12 +212,21 @@ for i in range(len(test_directories)):
         if best_view == 'axial':
             prediction_axial[prediction_axial >= best_threshold] = 1
             prediction_axial[prediction_axial != 1] = 0
-            prediction_axial = postprocess_prediticion(prediction_axial)
-            iou_score = calculate_iou_score(prediction=prediction_axial, ground_truth=roi_array)
-            test_scores.append(iou_score)
+            coherence = postprocess_prediticion(prediction_axial)
+            majority = postprocess_prediticion(prediction_array=prediction_axial, majority_voting=True)
+            test_scores.append(calculate_iou_score(prediction=prediction_axial, ground_truth=roi_array))
+            test_scores_coherence.append(calculate_iou_score(prediction=coherence, ground_truth=roi_array))
+            test_scores_majority.append(calculate_iou_score(prediction=majority, ground_truth=roi_array))
+
             save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
                                              prediction=prediction_axial,
                                              root_dir='results/' + backbone + '_' + architecture + '/' + str(k))
+            save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
+                                             prediction=coherence,
+                                             root_dir='results/' + backbone + '_' + architecture + '/coherence/' + str(k))
+            save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
+                                             prediction=majority,
+                                             root_dir='results/' + backbone + '_' + architecture + '/majority/' + str(k))
     if best_view == 'coronal' or best_view == 'combined':
         # predict coronal value
         logging.info('Predicting coronal values')
@@ -224,12 +236,23 @@ for i in range(len(test_directories)):
         if best_view == 'coronal':
             prediction_coronal[prediction_coronal >= best_threshold] = 1
             prediction_coronal[prediction_coronal != 1] = 0
-            prediction_coronal = postprocess_prediticion(prediction_coronal)
-            iou_score = calculate_iou_score(prediction=prediction_coronal, ground_truth=roi_array)
-            test_scores.append(iou_score)
+            coherence = postprocess_prediticion(prediction_coronal)
+            majority = postprocess_prediticion(prediction_array=prediction_coronal, majority_voting=True)
+            test_scores.append(calculate_iou_score(prediction=prediction_coronal, ground_truth=roi_array))
+            test_scores_coherence.append(calculate_iou_score(prediction=coherence, ground_truth=roi_array))
+            test_scores_majority.append(calculate_iou_score(prediction=majority, ground_truth=roi_array))
+
             save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
                                              prediction=prediction_coronal,
                                              root_dir='results/' + backbone + '_' + architecture + '/' + str(k))
+            save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
+                                             prediction=coherence,
+                                             root_dir='results/' + backbone + '_' + architecture + '/coherence/' + str(
+                                                 k))
+            save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
+                                             prediction=majority,
+                                             root_dir='results/' + backbone + '_' + architecture + '/majority/' + str(
+                                                 k))
     if best_view == 'sagittal' or best_view == 'combined':
         logging.info('Predicting sagittal values')
         for j in range(scan_array.shape[2]):
@@ -238,26 +261,53 @@ for i in range(len(test_directories)):
         if best_view == 'sagittal':
             prediction_sagittal[prediction_sagittal >= best_threshold] = 1
             prediction_sagittal[prediction_sagittal != 1] = 0
-            prediction_sagittal = postprocess_prediticion(prediction_sagittal)
-            iou_score = calculate_iou_score(prediction=prediction_sagittal, ground_truth=roi_array)
-            test_scores.append(iou_score)
+            coherence = postprocess_prediticion(prediction_sagittal)
+            majority = postprocess_prediticion(prediction_array=prediction_sagittal, majority_voting=True)
+            test_scores.append(calculate_iou_score(prediction=prediction_axial, ground_truth=roi_array))
+            test_scores_coherence.append(calculate_iou_score(prediction=coherence, ground_truth=roi_array))
+            test_scores_majority.append(calculate_iou_score(prediction=majority, ground_truth=roi_array))
+
             save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
                                              prediction=prediction_sagittal,
                                              root_dir='results/' + backbone + '_' + architecture + '/' + str(k))
+            save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
+                                             prediction=coherence,
+                                             root_dir='results/' + backbone + '_' + architecture + '/coherence/' + str(
+                                                 k))
+            save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
+                                             prediction=majority,
+                                             root_dir='results/' + backbone + '_' + architecture + '/majority/' + str(
+                                                 k))
     if best_view == 'combined':
         # combine the views and calculate IoU
         prediction_combined = (prediction_axial + prediction_coronal + prediction_coronal) / 3.0
         prediction_combined[prediction_combined >= best_threshold] = 1
         prediction_combined[prediction_combined != 1] = 0
-        prediction_combined = postprocess_prediticion(prediction_combined)
-        iou_score = calculate_iou_score(prediction=prediction_combined, ground_truth=roi_array)
-        test_scores.append(iou_score)
+        coherence = postprocess_prediticion(prediction_combined)
+        majority = postprocess_prediticion(prediction_array=prediction_combined, majority_voting=True)
+        test_scores.append(calculate_iou_score(prediction=prediction_combined, ground_truth=roi_array))
+        test_scores_coherence.append(calculate_iou_score(prediction=coherence, ground_truth=roi_array))
+        test_scores_majority.append(calculate_iou_score(prediction=majority, ground_truth=roi_array))
+
         save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
                                          prediction=prediction_combined,
                                          root_dir='results/' + backbone + '_' + architecture + '/' + str(k))
+        save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
+                                         prediction=coherence,
+                                         root_dir='results/' + backbone + '_' + architecture + '/coherence/' + str(
+                                             k))
+        save_prediction_slices_with_scan(best_direction=best_view, scan_array=scan_array, roi_array=roi_array,
+                                         prediction=majority,
+                                         root_dir='results/' + backbone + '_' + architecture + '/majority/' + str(
+                                             k))
     k = k + 1
 text_file = open('results/' + backbone + '_' + architecture + '/results_best.txt', 'a')
 text_file.write('\r\nTest results: ' + ' '.join([str(score) for score in test_scores]))
+text_file.write('\r\nTest results (coherence): ' + ' '.join([str(score) for score in test_scores_coherence]))
+text_file.write('\r\nTest results (majority): ' + ' '.join([str(score) for score in test_scores_majority]))
 text_file.write('\r\nTest average: ' + str(round(float(np.mean(test_scores)), 4)))
+text_file.write('\r\nTest average (coherence): ' + str(round(float(np.mean(test_scores_coherence)), 4)))
+text_file.write('\r\nTest average (majority): ' + str(round(float(np.mean(test_scores_majority)), 4)))
+
 text_file.close()
 exit(0)
