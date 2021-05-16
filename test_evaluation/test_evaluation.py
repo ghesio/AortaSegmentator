@@ -72,31 +72,33 @@ for i in range(len(test_directories)):
     prediction_sagittal = np.empty(shape=scan_array.shape)
     prediction_combined = np.empty(shape=scan_array.shape)
     logging.info('Predicting axial values')
+    os.makedirs('results/' + backbone + '_' + architecture + '/' + str(k) + '/heatmap/axial/')
     for j in range(scan_array.shape[0]):
         current = tf.expand_dims(tf.expand_dims(preprocessor(scan_array[j, :, :]), axis=-1), axis=0)
         prediction_axial[j, :, :] = models[0].predict(current).reshape(axial_shape)
-        heatmap_file = 'results/' + backbone + '_' + architecture + '/' \
-                       + str(k) + '/heatmap/axial_' + str.zfill(str(j), 4) + '.png'
+        heatmap_file = 'results/' + backbone + '_' + architecture + '/' + str(k) + '/heatmap/axial/axial_' + str.zfill(str(j), 4) + '.png'
         sns_map = seaborn.heatmap(prediction_axial[j, :, :])
         plt.show(sns_map)
         plt.savefig(heatmap_file)
         plt.clf()
     logging.info('Predicting coronal values')
+    os.makedirs('results/' + backbone + '_' + architecture + '/' + str(k) + '/heatmap/coronal/')
     for j in range(scan_array.shape[1]):
         current = tf.expand_dims(tf.expand_dims(preprocessor(scan_array[:, j, :]), axis=-1), axis=0)
         prediction_coronal[:, j, :] = models[1].predict(current).reshape(coronal_shape)
         heatmap_file = 'results/' + backbone + '_' + architecture + '/' \
-                       + str(k) + '/heatmap/coronal_' + str.zfill(str(j), 4) + '.png'
+                       + str(k) + '/heatmap/coronal/coronal_' + str.zfill(str(j), 4) + '.png'
         sns_map = seaborn.heatmap(prediction_coronal[:, j, :])
         plt.show(sns_map)
         plt.savefig(heatmap_file)
         plt.clf()
     logging.info('Predicting sagittal values')
+    os.makedirs('results/' + backbone + '_' + architecture + '/' + str(k) + '/heatmap/sagittal/')
     for j in range(scan_array.shape[2]):
         current = tf.expand_dims(tf.expand_dims(preprocessor(scan_array[:, :, j]), axis=-1), axis=0)
         prediction_sagittal[:, :, j] = models[2].predict(current).reshape(sagittal_shape)
         heatmap_file = 'results/' + backbone + '_' + architecture + '/' \
-                       + str(k) + '/heatmap/sagittal_' + str.zfill(str(j), 4) + '.png'
+                       + str(k) + '/heatmap/sagittal/sagittal_' + str.zfill(str(j), 4) + '.png'
         sns_map = seaborn.heatmap(prediction_sagittal[:, :, j])
         plt.show(sns_map)
         plt.savefig(heatmap_file)
