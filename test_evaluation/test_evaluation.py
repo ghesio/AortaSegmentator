@@ -28,7 +28,8 @@ iou_map_combined = {}
 
 preprocessor = get_preprocessor()
 # get best threshold and best_view
-with open('results/' + backbone + '_' + architecture + '/results_best.txt', 'r') as file:
+file_path = 'results/' + backbone + '_' + architecture + '/results_best.txt'
+with open(file_path, 'r') as file:
     data = file.read().replace('\n', '')
 splitted = data.split(' - ')
 best_view = splitted[1]
