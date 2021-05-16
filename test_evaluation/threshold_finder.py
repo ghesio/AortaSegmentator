@@ -12,8 +12,6 @@ import logging
 import csv
 import os
 from datetime import datetime
-import seaborn
-
 
 # define threshold interval and delta
 threshold_interval = [0.3, 0.9]
