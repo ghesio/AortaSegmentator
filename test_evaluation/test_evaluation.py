@@ -78,7 +78,8 @@ for i in range(len(test_directories)):
         heatmap_file = 'results/' + backbone + '_' + architecture + '/' \
                        + str(k) + '/heatmap/axial_' + str.zfill(str(j), 4) + '.png'
         sns_map = seaborn.heatmap(prediction_axial[j, :, :])
-        plt.savefig(sns_map)
+        plt.show(sns_map)
+        plt.savefig(heatmap_file)
         plt.clf()
     logging.info('Predicting coronal values')
     for j in range(scan_array.shape[1]):
@@ -86,8 +87,9 @@ for i in range(len(test_directories)):
         prediction_coronal[:, j, :] = models[1].predict(current).reshape(coronal_shape)
         heatmap_file = 'results/' + backbone + '_' + architecture + '/' \
                        + str(k) + '/heatmap/coronal_' + str.zfill(str(j), 4) + '.png'
-        sns_map = seaborn.heatmap(prediction_coronal[j, :, :])
-        plt.savefig(sns_map)
+        sns_map = seaborn.heatmap(prediction_coronal[:, j, :])
+        plt.show(sns_map)
+        plt.savefig(heatmap_file)
         plt.clf()
     logging.info('Predicting sagittal values')
     for j in range(scan_array.shape[2]):
@@ -95,8 +97,9 @@ for i in range(len(test_directories)):
         prediction_sagittal[:, :, j] = models[2].predict(current).reshape(sagittal_shape)
         heatmap_file = 'results/' + backbone + '_' + architecture + '/' \
                        + str(k) + '/heatmap/sagittal_' + str.zfill(str(j), 4) + '.png'
-        sns_map = seaborn.heatmap(prediction_sagittal[j, :, :])
-        plt.savefig(sns_map)
+        sns_map = seaborn.heatmap(prediction_sagittal[:, :, j])
+        plt.show(sns_map)
+        plt.savefig(heatmap_file)
         plt.clf()
     if best_view == 'axial':
         prediction_axial[prediction_axial >= best_threshold] = 1
