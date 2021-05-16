@@ -15,6 +15,7 @@ from datetime import datetime
 import seaborn
 import matplotlib.pyplot as plt
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 # define threshold interval and delta
 threshold_interval = [0.3, 0.9]

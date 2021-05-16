@@ -13,6 +13,8 @@ import csv
 import os
 from datetime import datetime
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+
 # define threshold interval and delta
 threshold_interval = [0.3, 0.9]
 delta = 0.02
