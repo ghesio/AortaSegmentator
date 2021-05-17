@@ -268,6 +268,6 @@ def save_heatmaps(prediction, backbone, architecture, k, view):
     for i in range(prediction.shape[2]):
         sns_map = seaborn.heatmap(prediction[:, :, i])
         plt.show(sns_map)
-        heatmap_file = base_out_dir_coronal + '/sagittal_' + str.zfill(str(i), 4) + '.png'
+        heatmap_file = base_out_dir_sagittal + '/sagittal_' + str.zfill(str(i), 4) + '.png'
         plt.savefig(heatmap_file)
         plt.clf()
