@@ -84,10 +84,13 @@ for i in range(len(test_directories)):
         prediction_sagittal[:, :, j] = models[2].predict(current).reshape(sagittal_shape)
     logging.info('Combining views')
     prediction_combined = (prediction_axial + prediction_coronal + prediction_sagittal) / 3.0
-    logging.info('Saving heatmaps')
+    logging.info('Saving heatmaps - axial')
     save_heatmaps(prediction=prediction_axial, backbone=backbone, architecture=architecture, k=k, view='axial')
+    logging.info('Saving heatmaps - coronal')
     save_heatmaps(prediction=prediction_coronal, backbone=backbone, architecture=architecture, k=k, view='coronal')
+    logging.info('Saving heatmaps - sagittal')
     save_heatmaps(prediction=prediction_sagittal, backbone=backbone, architecture=architecture, k=k, view='sagittal')
+    logging.info('Saving heatmaps - combined')
     save_heatmaps(prediction=prediction_combined, backbone=backbone, architecture=architecture, k=k, view='combined')
 
     if best_view == 'axial':
