@@ -172,6 +172,7 @@ def save_prediction_slices_with_scan(best_direction, scan_array, roi_array, pred
     orientation_filter = sitk.DICOMOrientImageFilter()
     orientation_filter.SetDesiredCoordinateOrientation(DesiredCoordinateOrientation='RAI')
     image = orientation_filter.Execute(image)
+    os.makedirs(root_dir)
     sitk.WriteImage(image, root_dir + '/' + best_direction + '.nii')
     directions = ('axial', 'coronal', 'sagittal')
     for direction in directions:
