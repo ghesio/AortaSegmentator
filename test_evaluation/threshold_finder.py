@@ -82,7 +82,7 @@ for i in range(len(validation_directories)):
         current = tf.expand_dims(tf.expand_dims(preprocessor(scan_array[:, :, j]), axis=-1), axis=0)
         prediction_sagittal[:, :, j] = models[2].predict(current).reshape(sagittal_shape)
     # combine the views and calculate IoU
-    prediction_combined = (prediction_axial + prediction_coronal + prediction_coronal) / 3.0
+    prediction_combined = (prediction_axial + prediction_coronal + prediction_sagittal) / 3.0
     array_axial.append(prediction_axial)
     array_coronal.append(prediction_coronal)
     array_sagittal.append(prediction_sagittal)

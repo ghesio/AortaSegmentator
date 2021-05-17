@@ -8,6 +8,8 @@ import numpy as np
 from utils import custom_logger
 import logging
 from utils.misc import convert_img, calculate_intersection_on_prediction, calculate_intersection_on_prediction_with_scan
+import seaborn
+import matplotlib.pyplot as plt
 
 
 clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4,4))
@@ -239,3 +241,33 @@ def postprocess_prediticion(prediction_array, radius=3, majority_voting=False, t
                         if np.all(z_axis == 1) and np.all(y_axis == 1) and np.all(x_axis == 1):
                             postprocessed[i][j][k] = 1
     return postprocessed
+
+
+def save_heatmaps(prediction, backbone, architecture, k, view):
+    base_out_dir_axial = 'results/' + backbone + '_' + architecture + '/heatmap/' + str(k) + '/' + view + '/axial'
+    base_out_dir_coronal = 'results/' + backbone + '_' + architecture + '/heatmap/' + str(k) + '/' + view + '/coronal'
+    base_out_dir_sagittal = 'results/' + backbone + '_' + architecture + '/heatmap/' + str(k) + '/' + view + '/sagittal'
+    os.makedirs(base_out_dir_axial)
+    os.makedirs(base_out_dir_coronal)
+    os.makedirs(base_out_dir_sagittal)
+    # axial
+    for i in range(prediction.shape[0]):
+        sns_map = seaborn.heatmap(prediction[i, :, :])
+        plt.show(sns_map)
+        heatmap_file = base_out_dir_axial + '/axial_' + str.zfill(str(i), 4) + '.png'
+        plt.savefig(heatmap_file)
+        plt.clf()
+    # coronal
+    for i in range(prediction.shape[1]):
+        sns_map = seaborn.heatmap(prediction[:, i, :])
+        plt.show(sns_map)
+        heatmap_file = base_out_dir_coronal + '/coronal_' + str.zfill(str(i), 4) + '.png'
+        plt.savefig(heatmap_file)
+        plt.clf()
+    # sagittal
+    for i in range(prediction.shape[2]):
+        sns_map = seaborn.heatmap(prediction[:, :, i])
+        plt.show(sns_map)
+        heatmap_file = base_out_dir_coronal + '/sagittal_' + str.zfill(str(i), 4) + '.png'
+        plt.savefig(heatmap_file)
+        plt.clf()

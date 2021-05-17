@@ -1,6 +1,6 @@
 import json
 from utils.dicom_utils import convert_image_to_numpy_array, save_prediction_slices_with_scan, preprocess_slice, \
-    postprocess_prediticion
+    postprocess_prediticion, save_heatmaps
 from utils.network_utils import get_pretrained_models, get_best_checkpoints, get_preprocessor, backbone, architecture
 import keras
 import numpy as np
@@ -12,8 +12,7 @@ import logging
 import csv
 import os
 from datetime import datetime
-import seaborn
-import matplotlib.pyplot as plt
+
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
@@ -35,7 +34,7 @@ splitted = data.split(' - ')
 best_view = splitted[1]
 best_threshold = float(splitted[2])
 
-
+logging.info('Best view ' + best_view + ' - best threshold ' +str(best_threshold))
 # get test and directories to load
 test_directories = []
 with open('data/info.json') as f:
@@ -72,37 +71,25 @@ for i in range(len(test_directories)):
     prediction_sagittal = np.empty(shape=scan_array.shape)
     prediction_combined = np.empty(shape=scan_array.shape)
     logging.info('Predicting axial values')
-    os.makedirs('results/' + backbone + '_' + architecture + '/' + str(k) + '/heatmap/axial/')
     for j in range(scan_array.shape[0]):
         current = tf.expand_dims(tf.expand_dims(preprocessor(scan_array[j, :, :]), axis=-1), axis=0)
         prediction_axial[j, :, :] = models[0].predict(current).reshape(axial_shape)
-        heatmap_file = 'results/' + backbone + '_' + architecture + '/' + str(k) + '/heatmap/axial/axial_' + str.zfill(str(j), 4) + '.png'
-        sns_map = seaborn.heatmap(prediction_axial[j, :, :])
-        plt.show(sns_map)
-        plt.savefig(heatmap_file)
-        plt.clf()
     logging.info('Predicting coronal values')
-    os.makedirs('results/' + backbone + '_' + architecture + '/' + str(k) + '/heatmap/coronal/')
     for j in range(scan_array.shape[1]):
         current = tf.expand_dims(tf.expand_dims(preprocessor(scan_array[:, j, :]), axis=-1), axis=0)
         prediction_coronal[:, j, :] = models[1].predict(current).reshape(coronal_shape)
-        heatmap_file = 'results/' + backbone + '_' + architecture + '/' \
-                       + str(k) + '/heatmap/coronal/coronal_' + str.zfill(str(j), 4) + '.png'
-        sns_map = seaborn.heatmap(prediction_coronal[:, j, :])
-        plt.show(sns_map)
-        plt.savefig(heatmap_file)
-        plt.clf()
     logging.info('Predicting sagittal values')
-    os.makedirs('results/' + backbone + '_' + architecture + '/' + str(k) + '/heatmap/sagittal/')
     for j in range(scan_array.shape[2]):
         current = tf.expand_dims(tf.expand_dims(preprocessor(scan_array[:, :, j]), axis=-1), axis=0)
         prediction_sagittal[:, :, j] = models[2].predict(current).reshape(sagittal_shape)
-        heatmap_file = 'results/' + backbone + '_' + architecture + '/' \
-                       + str(k) + '/heatmap/sagittal/sagittal_' + str.zfill(str(j), 4) + '.png'
-        sns_map = seaborn.heatmap(prediction_sagittal[:, :, j])
-        plt.show(sns_map)
-        plt.savefig(heatmap_file)
-        plt.clf()
+    logging.info('Combining views')
+    prediction_combined = (prediction_axial + prediction_coronal + prediction_sagittal) / 3.0
+    logging.info('Saving heatmaps')
+    save_heatmaps(prediction=prediction_axial, backbone=backbone, architecture=architecture, k=k, view='axial')
+    save_heatmaps(prediction=prediction_coronal, backbone=backbone, architecture=architecture, k=k, view='coronal')
+    save_heatmaps(prediction=prediction_sagittal, backbone=backbone, architecture=architecture, k=k, view='sagittal')
+    save_heatmaps(prediction=prediction_combined, backbone=backbone, architecture=architecture, k=k, view='combined')
+
     if best_view == 'axial':
         prediction_axial[prediction_axial >= best_threshold] = 1
         prediction_axial[prediction_axial != 1] = 0
@@ -165,7 +152,6 @@ for i in range(len(test_directories)):
                                                  k))
     if best_view == 'combined':
         # combine the views and calculate IoU
-        prediction_combined = (prediction_axial + prediction_coronal + prediction_coronal) / 3.0
         prediction_combined[prediction_combined >= best_threshold] = 1
         prediction_combined[prediction_combined != 1] = 0
         coherence = postprocess_prediticion(prediction_combined)

@@ -10,8 +10,8 @@ from keras.models import Model, load_model
 from keras.optimizers import Adam
 
 # define backbone for the networks
-backbone = 'resnet34'
-architecture = 'unet'  # unet, pspnet, linknet, fpn
+backbone = 'resnet101'
+architecture = 'linknet'  # unet, pspnet, linknet, fpn
 checkpoint_dir = 'checkpoints/'
 
 
