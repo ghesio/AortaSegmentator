@@ -1,1 +1,1 @@
-__all__ = ['data_cutter', 'data_fuser', 'data_locator', 'data_slicer']
+__all__ = ['data_cutter', 'data_locator', 'data_slicer']

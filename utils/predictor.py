@@ -10,15 +10,15 @@ models = get_pretrained_models()
 threshold = 0.9
 
 
-def predict(dicom_location, out_dir, roi_dir=None):
-    roi_array = None
-    if roi_dir is not None:
-        roi_array = du.convert_image_to_numpy_array(input_dir=roi_dir, roi=True)
+def predict(dicom_location, out_dir):
     # convert the dicom to image array
     scan_array = du.convert_image_to_numpy_array(input_dir=dicom_location)
     # preprocess the image
     preprocessed_image = preprocessor(scan_array)
     # get the shapes
+    # preprocess every slice
+    for i in range(roi_array.shape[0]):
+        scan_array[i, :, :] = preprocess_slice(scan_array[i, :, :], None)
     axial_shape = scan_array[0, :, :].shape
     coronal_shape = scan_array[:, 0, :].shape
     sagittal_shape = scan_array[:, :, 0].shape
@@ -42,9 +42,6 @@ def predict(dicom_location, out_dir, roi_dir=None):
     image = orientation_filter.Execute(image)
     print('Saving axial prediction')
     sitk.WriteImage(image, out_dir + '/axial.nii')
-    if roi_dir is not None:
-        print('Saving axial intersection slices')
-        du.save_prediction_slices(roi_array=roi_array, prediction=prediction_axial, root_dir=out_dir + '/axial')
 
     # predict coronal value
     print('Predicting coronal values')
@@ -60,9 +57,6 @@ def predict(dicom_location, out_dir, roi_dir=None):
     image = orientation_filter.Execute(image)
     print('Saving coronal prediction')
     sitk.WriteImage(image, out_dir + '/coronal.nii')
-    if roi_dir is not None:
-        print('Saving coronal intersection slices')
-        du.save_prediction_slices(roi_array=roi_array, prediction=prediction_axial, root_dir=out_dir + '/coronal')
 
     # predict sagittal values
     print('Predicting sagittal values')
@@ -78,9 +72,6 @@ def predict(dicom_location, out_dir, roi_dir=None):
     image = orientation_filter.Execute(image)
     print('Saving sagittal prediction')
     sitk.WriteImage(image, out_dir + '/sagittal.nii')
-    if roi_dir is not None:
-        print('Saving coronal intersection slices')
-        du.save_prediction_slices(roi_array=roi_array, prediction=prediction_axial, root_dir=out_dir + '/sagittal')
 
     # combine the views
     prediction_combined = (prediction_axial + prediction_coronal + prediction_coronal) / 3.0
@@ -93,17 +84,6 @@ def predict(dicom_location, out_dir, roi_dir=None):
     orientation_filter.SetDesiredCoordinateOrientation(DesiredCoordinateOrientation='RAI')
     image = orientation_filter.Execute(image)
     sitk.WriteImage(image, out_dir + '/combined.nii')
-    if roi_dir is not None:
-        print('Saving combined intersection slices')
-        du.save_prediction_slices(roi_array=roi_array, prediction=prediction_axial, root_dir=out_dir + '/combined')
-        out = 'IoU scores\r\n'
-        out += 'Axial: ' + str(calculate_iou_score(prediction_axial/255, roi_array/255)) + '\r\n'
-        out += 'Coronal: ' + str(calculate_iou_score(prediction_coronal/255, roi_array/255)) + '\r\n'
-        out += 'Sagittal: ' + str(calculate_iou_score(prediction_sagittal/255, roi_array/255)) + '\r\n'
-        out += 'Combined: ' + str(calculate_iou_score(prediction_combined/255, roi_array/255)) + '\r\n'
-        text_file = open(out_dir + '/scores.txt', 'w')
-        text_file.write(out)
-        text_file.close()
 
 
-predict('../data/in/AGALLIJ/scan', 'C:\\Users\\ghesio\\Desktop\\out', '../data/in/AGALLIJ/roi')
+predict('../data/in/AGALLIJ/scan', 'C:\\Users\\ghesio\\Desktop\\out')
