@@ -124,8 +124,8 @@ for training
 * run from the root directory `python training/network_training.py` (if needed edit the parameters for epochs, backbone and samples for each patient)
     
   This will train three different unets on axial, coronal and sagittal direction; the best results will 
-  be saved in `checkpoints` directory with syntax `direction_backbone-numberOfEpochs-valLoss.hdf5`
-
+  be saved in `checkpoints`.
+  
 ## DETAILS
 
 Only DICOM series are supported.
@@ -151,11 +151,11 @@ For more information read docs and comments in code.
 
 ## TODOs
 
-* cleanup unused modules in `requirements.txt` file
+* ~~cleanup unused modules in `requirements.txt` file~~
 * singleton/unified logger
 * correct package architecture (may not be possible to run this except from command line, i.e. using PyCharm)
-* a predictor which takes a TC scan from disk and saves the predicted ROI
-* method to analyse the thresholds extracted from trained networks
+* ~~a predictor which takes a TC scan from disk and saves the predicted ROI~~
+* ~~method to analyse the thresholds extracted from trained networks~~
 
 ## LICENSE
 Copyright 2021
